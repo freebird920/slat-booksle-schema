@@ -13,7 +13,7 @@
  */
 export type BibliographicReactionObjectBRO = BroItemList | BroArticle | BroAbstract;
 /**
- * UUID v4(랜덤) 및 v7(타임스탬프)만 허용 (영속성 엔티티용)
+ * UUID v4(랜덤) 및 v7(타임스탬프) v5(네임스페이스 기반 SHA-1 해시)
  */
 export type UrnUuidOnly = string;
 export type AuthorRoot = {

@@ -241,7 +241,7 @@ var bro_v1_schema_default = {
           pattern: "^urn:kolis:[a-zA-Z0-9]+$"
         },
         {
-          pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+          pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
         {
           pattern: "^urn:nlk:[a-zA-Z0-9]+$"
@@ -250,8 +250,8 @@ var bro_v1_schema_default = {
     },
     urnUuidOnly: {
       type: "string",
-      pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
-      description: "UUID v4(\uB79C\uB364) \uBC0F v7(\uD0C0\uC784\uC2A4\uD0EC\uD504)\uB9CC \uD5C8\uC6A9 (\uC601\uC18D\uC131 \uC5D4\uD2F0\uD2F0\uC6A9)"
+      pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+      description: "UUID v4(\uB79C\uB364) \uBC0F v7(\uD0C0\uC784\uC2A4\uD0EC\uD504) v5(\uB124\uC784\uC2A4\uD398\uC774\uC2A4 \uAE30\uBC18 SHA-1 \uD574\uC2DC)"
     },
     strictDateTime: {
       type: "string",
@@ -413,7 +413,7 @@ var bro_v1_schema_default = {
           maxLength: 1e3
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
         }
       },
       additionalProperties: false
@@ -430,7 +430,7 @@ var bro_v1_schema_default = {
           maxLength: 1e3
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:govcode:\\d{7}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:govcode:\\d{7}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
         }
       },
       additionalProperties: false
@@ -447,7 +447,7 @@ var bro_v1_schema_default = {
           maxLength: 100
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:(?:crn:\\d{13}|brn:\\d{10})|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:(?:crn:\\d{13}|brn:\\d{10})|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
         }
       },
       additionalProperties: false
@@ -464,7 +464,7 @@ var bro_v1_schema_default = {
           maxLength: 100
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:npo:\\d{10}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:npo:\\d{10}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
         }
       },
       additionalProperties: false

@@ -11,7 +11,7 @@ import * as v from 'valibot';
  */
 type BibliographicReactionObjectBRO = BroItemList | BroArticle | BroAbstract;
 /**
- * UUID v4(랜덤) 및 v7(타임스탬프)만 허용 (영속성 엔티티용)
+ * UUID v4(랜덤) 및 v7(타임스탬프) v5(네임스페이스 기반 SHA-1 해시)
  */
 type UrnUuidOnly = string;
 type AuthorRoot = {
@@ -342,7 +342,7 @@ var $defs = {
 				pattern: "^urn:kolis:[a-zA-Z0-9]+$"
 			},
 			{
-				pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+				pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
 			},
 			{
 				pattern: "^urn:nlk:[a-zA-Z0-9]+$"
@@ -351,8 +351,8 @@ var $defs = {
 	},
 	urnUuidOnly: {
 		type: "string",
-		pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
-		description: "UUID v4(랜덤) 및 v7(타임스탬프)만 허용 (영속성 엔티티용)"
+		pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+		description: "UUID v4(랜덤) 및 v7(타임스탬프) v5(네임스페이스 기반 SHA-1 해시)"
 	},
 	strictDateTime: {
 		type: "string",
@@ -527,7 +527,7 @@ var $defs = {
 				maxLength: 1000
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
 			}
 		},
 		additionalProperties: false
@@ -548,7 +548,7 @@ var $defs = {
 				maxLength: 1000
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:govcode:\\d{7}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:govcode:\\d{7}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
 			}
 		},
 		additionalProperties: false
@@ -569,7 +569,7 @@ var $defs = {
 				maxLength: 100
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:(?:crn:\\d{13}|brn:\\d{10})|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:(?:crn:\\d{13}|brn:\\d{10})|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
 			}
 		},
 		additionalProperties: false
@@ -590,7 +590,7 @@ var $defs = {
 				maxLength: 100
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:npo:\\d{10}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:npo:\\d{10}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
 			}
 		},
 		additionalProperties: false
