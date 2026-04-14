@@ -8,23 +8,25 @@ import * as v from 'valibot';
  */
 /**
  * Bibliographic Reaction Object (BRO)의 원시스키마 BroItemList, BroArticle, BroAbstract. 본 스키마는 시스템 쓰기(Write/Command) 전용 모델이며, 클라이언트 조회를 위한 내포(Embedding) 트리 변환은 미들웨어 계층의 책임으로 위임함.
+ * [ARCHITECTURE CORE DIRECTIVE] 본 원시 스키마는 애그리거트 루트(Aggregate Root) 간의 객체 내포(Embedding)를 엄격히 금지하고 단방향 URN 식별자(@id) 참조만을 허용한다. 이는 분산 DB 환경에서 트랜잭션 락 경합과 다중 판본 업데이트 이상을 방어하기 위한 CQRS 쓰기 파이프라인의 물리적 제약이다. 프론트엔드 렌더링 최적화를 위한 JSON 내포 구조(View Model)가 필요할 경우, 본 원시 스키마를 수정하지 말고 도메인 계층에서 In-Memory Join을 수행하여 도메인 특화 응답 DTO를 합성할 것.
  */
 type BibliographicReactionObjectBRO = BroItemList | BroArticle | BroAbstract;
 /**
  * UUID v4(랜덤) 및 v7(타임스탬프) v5(네임스페이스 기반 SHA-1 해시)
  */
 type UrnUuidOnly = string;
-type CreatorRoot = {
-    [k: string]: unknown;
-} & {
-    [k: string]: unknown;
-} & {
-    [k: string]: unknown;
-} & {
-    [k: string]: unknown;
-} & {
-    [k: string]: unknown;
-};
+/**
+ * [CREATOR_ENTITIES: 2. 저자 엔티티 계층] 다형성 속성 출혈(Property Bleeding) 상호 배제.
+ */
+type CreatorRoot = CreatorPerson$1 | CreatorGovernment$1 | CreatorCorporation$1 | CreatorOrganization$1 | CreatorSoftware$1;
+type UrnOrcid = string;
+type UrnIsni = string;
+type UrnGovcode = string;
+type UrnLei = string;
+type UrnCrn = string;
+type UrnBrn = string;
+type UrnNpo = string;
+type UrnModel = string;
 /**
  * RFC 3339 기반 날짜 포맷 검증. Z 또는 오프셋(+09:00)을 강제하여 타임존 누락으로 인한 DB 데이터 오염 방지.
  */
@@ -61,14 +63,39 @@ interface BroItemList {
     creator: [CreatorRoot, ...CreatorRoot[]];
     /**
      * 리스트에 포함된 개별 문서(Article 등)의 식별자 목록. 페이로드 생성 시 반드시 @id 객체 배열만을 전송해야 하며, 문서 객체 전체를 배열 내부에 내포(Embed)하는 페이로드는 검증(Validation) 단계에서 거부(Reject)된다.
-     *
-     * @minItems 0
+     * [ANTI-PATTERN PREVENTION] itemListElement 내부의 oneOf를 통한 Article 객체 직접 포함 허용 로직은 데이터 단편화 방지 및 식별자 정규화를 위해 영구 삭제됨. 모든 하위 엔티티 결합은 오직 @id 포인터로만 이루어져야 함.
      */
     itemListElement: {
         "@id": UrnUuidOnly;
         [k: string]: unknown;
     }[];
     [k: string]: unknown;
+}
+interface CreatorPerson$1 {
+    "@type": "Person";
+    name: string;
+    "@id": UrnUuidOnly | UrnOrcid | UrnIsni;
+}
+interface CreatorGovernment$1 {
+    "@type": "GovernmentOrganization";
+    name: string;
+    "@id": UrnUuidOnly | UrnGovcode | UrnLei | UrnIsni;
+}
+interface CreatorCorporation$1 {
+    "@type": "Corporation";
+    name: string;
+    "@id": UrnUuidOnly | UrnCrn | UrnBrn | UrnLei | UrnIsni;
+}
+interface CreatorOrganization$1 {
+    "@type": "Organization";
+    name: string;
+    "@id": UrnUuidOnly | UrnNpo | UrnLei | UrnIsni;
+}
+interface CreatorSoftware$1 {
+    "@type": "SoftwareApplication";
+    name: string;
+    softwareVersion?: string;
+    "@id": UrnModel;
 }
 /**
  * 단일 코어 문서(Article) 처리를 위한 쓰기/영속성 스키마. 파생 문서(Abstract 등)와의 결합은 외부 참조(@id)로만 이뤄진다.
@@ -88,6 +115,7 @@ interface BroArticle {
     text: BoundedText;
     /**
      * 현재 문서(Article)에 종속된 파생 요약본의 식별자(URN) 배열. 요약본의 상세 텍스트(Text)는 포함하지 않는다.
+     * [DATA REDUNDANCY LOCK] Article 페이로드 내에 Abstract 본문 내포를 허용할 경우 발생하는 1:N 구조의 디스크 중복 적재(Redundancy) 및 B-Tree 분할을 막기 위해 철저히 식별자 참조 체계로 고립시킴.
      */
     abstract?: {
         "@id": UrnUuidOnly;
@@ -105,7 +133,7 @@ interface BroArticle {
 interface TerminalIdentifier {
     "@type": "Article" | "CreativeWork";
     /**
-     * 식별자 검증. 시스템 레벨의 소문자 URN Scheme 정규화를 전제로 패턴을 단순화함.
+     * [BASE_PRIMITIVES: 1. 원시 데이터 계층 - 식별자, 날짜 통제] 식별자 검증. 시스템 레벨의 소문자 URN Scheme 정규화를 전제로 패턴을 단순화함.
      */
     identifier: UrnIdentifier & UrnIdentifier1;
 }
@@ -119,10 +147,6 @@ interface BroAbstract {
     dateCreated: StrictDateTime;
     datePublished?: StrictDateTime;
     text: BoundedText;
-    /**
-     * 요약본의 언어 코드 (예: ko, en)
-     */
-    inLanguage?: string;
     /**
      * @minItems 1
      */
@@ -139,8 +163,7 @@ interface BroAbstract {
 var $schema = "https://json-schema.org/draft/2020-12/schema";
 var $id = "https://schema.slat.or.kr/bro/v1/schema.json";
 var title = "Bibliographic Reaction Object (BRO)";
-var description = "Bibliographic Reaction Object (BRO)의 원시스키마 BroItemList, BroArticle, BroAbstract. 본 스키마는 시스템 쓰기(Write/Command) 전용 모델이며, 클라이언트 조회를 위한 내포(Embedding) 트리 변환은 미들웨어 계층의 책임으로 위임함.";
-var $comment = "[ARCHITECTURE CORE DIRECTIVE] 본 원시 스키마는 애그리거트 루트(Aggregate Root) 간의 객체 내포(Embedding)를 엄격히 금지하고 단방향 URN 식별자(@id) 참조만을 허용한다. 이는 분산 DB 환경에서 트랜잭션 락 경합과 다중 판본 업데이트 이상을 방어하기 위한 CQRS 쓰기 파이프라인의 물리적 제약이다. 프론트엔드 렌더링 최적화를 위한 JSON 내포 구조(View Model)가 필요할 경우, 본 원시 스키마를 수정하지 말고 도메인 계층에서 In-Memory Join을 수행하여 도메인 특화 응답 DTO를 합성할 것.";
+var description = "Bibliographic Reaction Object (BRO)의 원시스키마 BroItemList, BroArticle, BroAbstract. 본 스키마는 시스템 쓰기(Write/Command) 전용 모델이며, 클라이언트 조회를 위한 내포(Embedding) 트리 변환은 미들웨어 계층의 책임으로 위임함.\n[ARCHITECTURE CORE DIRECTIVE] 본 원시 스키마는 애그리거트 루트(Aggregate Root) 간의 객체 내포(Embedding)를 엄격히 금지하고 단방향 URN 식별자(@id) 참조만을 허용한다. 이는 분산 DB 환경에서 트랜잭션 락 경합과 다중 판본 업데이트 이상을 방어하기 위한 CQRS 쓰기 파이프라인의 물리적 제약이다. 프론트엔드 렌더링 최적화를 위한 JSON 내포 구조(View Model)가 필요할 경우, 본 원시 스키마를 수정하지 말고 도메인 계층에서 In-Memory Join을 수행하여 도메인 특화 응답 DTO를 합성할 것.";
 var type = "object";
 var oneOf = [
 	{
@@ -188,9 +211,7 @@ var $defs = {
 			},
 			itemListElement: {
 				type: "array",
-				minItems: 0,
-				description: "리스트에 포함된 개별 문서(Article 등)의 식별자 목록. 페이로드 생성 시 반드시 @id 객체 배열만을 전송해야 하며, 문서 객체 전체를 배열 내부에 내포(Embed)하는 페이로드는 검증(Validation) 단계에서 거부(Reject)된다.",
-				$comment: "[ANTI-PATTERN PREVENTION] itemListElement 내부의 oneOf를 통한 Article 객체 직접 포함 허용 로직은 데이터 단편화 방지 및 식별자 정규화를 위해 영구 삭제됨. 모든 하위 엔티티 결합은 오직 @id 포인터로만 이루어져야 함.",
+				description: "리스트에 포함된 개별 문서(Article 등)의 식별자 목록. 페이로드 생성 시 반드시 @id 객체 배열만을 전송해야 하며, 문서 객체 전체를 배열 내부에 내포(Embed)하는 페이로드는 검증(Validation) 단계에서 거부(Reject)된다.\n[ANTI-PATTERN PREVENTION] itemListElement 내부의 oneOf를 통한 Article 객체 직접 포함 허용 로직은 데이터 단편화 방지 및 식별자 정규화를 위해 영구 삭제됨. 모든 하위 엔티티 결합은 오직 @id 포인터로만 이루어져야 함.",
 				items: {
 					type: "object",
 					required: [
@@ -246,8 +267,7 @@ var $defs = {
 			},
 			abstract: {
 				type: "array",
-				description: "현재 문서(Article)에 종속된 파생 요약본의 식별자(URN) 배열. 요약본의 상세 텍스트(Text)는 포함하지 않는다.",
-				$comment: "[DATA REDUNDANCY LOCK] Article 페이로드 내에 Abstract 본문 내포를 허용할 경우 발생하는 1:N 구조의 디스크 중복 적재(Redundancy) 및 B-Tree 분할을 막기 위해 철저히 식별자 참조 체계로 고립시킴.",
+				description: "현재 문서(Article)에 종속된 파생 요약본의 식별자(URN) 배열. 요약본의 상세 텍스트(Text)는 포함하지 않는다.\n[DATA REDUNDANCY LOCK] Article 페이로드 내에 Abstract 본문 내포를 허용할 경우 발생하는 1:N 구조의 디스크 중복 적재(Redundancy) 및 B-Tree 분할을 막기 위해 철저히 식별자 참조 체계로 고립시킴.",
 				items: {
 					type: "object",
 					required: [
@@ -300,10 +320,6 @@ var $defs = {
 			text: {
 				$ref: "#/$defs/boundedText"
 			},
-			inLanguage: {
-				type: "string",
-				description: "요약본의 언어 코드 (예: ko, en)"
-			},
 			creator: {
 				type: "array",
 				minItems: 1,
@@ -322,12 +338,9 @@ var $defs = {
 			}
 		}
 	},
-	BASE_PRIMITIVES: {
-		$comment: " 1. 원시 데이터 계층 (Base Primitives): 식별자, 날짜 통제"
-	},
 	urnIdentifier: {
 		type: "string",
-		description: "식별자 검증. 시스템 레벨의 소문자 URN Scheme 정규화를 전제로 패턴을 단순화함.",
+		description: "[BASE_PRIMITIVES: 1. 원시 데이터 계층 - 식별자, 날짜 통제] 식별자 검증. 시스템 레벨의 소문자 URN Scheme 정규화를 전제로 패턴을 단순화함.",
 		oneOf: [
 			{
 				pattern: "^urn:isbn:(?:97[89]-?)?(?:\\d[ -]?){9}[\\dxX]$"
@@ -354,8 +367,41 @@ var $defs = {
 		pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
 		description: "UUID v4(랜덤) 및 v7(타임스탬프) v5(네임스페이스 기반 SHA-1 해시)"
 	},
+	urnOrcid: {
+		type: "string",
+		pattern: "^urn:orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$"
+	},
+	urnIsni: {
+		type: "string",
+		pattern: "^urn:isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X]$"
+	},
+	urnLei: {
+		type: "string",
+		pattern: "^urn:lei:[0-9A-Z]{20}$"
+	},
+	urnGovcode: {
+		type: "string",
+		pattern: "^urn:kr:govcode:\\d{7}$"
+	},
+	urnCrn: {
+		type: "string",
+		pattern: "^urn:kr:crn:\\d{13}$"
+	},
+	urnBrn: {
+		type: "string",
+		pattern: "^urn:kr:brn:\\d{10}$"
+	},
+	urnNpo: {
+		type: "string",
+		pattern: "^urn:kr:npo:\\d{10}$"
+	},
+	urnModel: {
+		type: "string",
+		pattern: "^urn:model:[a-zA-Z0-9-]+:[a-zA-Z0-9\\.-]+$"
+	},
 	strictDateTime: {
 		type: "string",
+		format: "date-time",
 		pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})$",
 		description: "RFC 3339 기반 날짜 포맷 검증. Z 또는 오프셋(+09:00)을 강제하여 타임존 누락으로 인한 DB 데이터 오염 방지."
 	},
@@ -437,77 +483,27 @@ var $defs = {
 		},
 		additionalProperties: false
 	},
-	CREATOR_ENTITIES: {
-		$comment: " 2. 저자 엔티티 계층: 다형성 속성 출혈(Property Bleeding) 상호 배제."
-	},
 	creatorRoot: {
 		type: "object",
+		description: "[CREATOR_ENTITIES: 2. 저자 엔티티 계층] 다형성 속성 출혈(Property Bleeding) 상호 배제.",
 		required: [
 			"@type"
 		],
-		discriminator: {
-			propertyName: "@type"
-		},
-		allOf: [
+		oneOf: [
 			{
-				"if": {
-					properties: {
-						"@type": {
-							"const": "Person"
-						}
-					}
-				},
-				then: {
-					$ref: "#/$defs/creatorPerson"
-				}
+				$ref: "#/$defs/creatorPerson"
 			},
 			{
-				"if": {
-					properties: {
-						"@type": {
-							"const": "GovernmentOrganization"
-						}
-					}
-				},
-				then: {
-					$ref: "#/$defs/creatorGovernment"
-				}
+				$ref: "#/$defs/creatorGovernment"
 			},
 			{
-				"if": {
-					properties: {
-						"@type": {
-							"const": "Corporation"
-						}
-					}
-				},
-				then: {
-					$ref: "#/$defs/creatorCorporation"
-				}
+				$ref: "#/$defs/creatorCorporation"
 			},
 			{
-				"if": {
-					properties: {
-						"@type": {
-							"const": "Organization"
-						}
-					}
-				},
-				then: {
-					$ref: "#/$defs/creatorOrganization"
-				}
+				$ref: "#/$defs/creatorOrganization"
 			},
 			{
-				"if": {
-					properties: {
-						"@type": {
-							"const": "SoftwareApplication"
-						}
-					}
-				},
-				then: {
-					$ref: "#/$defs/creatorSoftware"
-				}
+				$ref: "#/$defs/creatorSoftware"
 			}
 		]
 	},
@@ -527,7 +523,17 @@ var $defs = {
 				maxLength: 1000
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				oneOf: [
+					{
+						$ref: "#/$defs/urnUuidOnly"
+					},
+					{
+						$ref: "#/$defs/urnOrcid"
+					},
+					{
+						$ref: "#/$defs/urnIsni"
+					}
+				]
 			}
 		},
 		additionalProperties: false
@@ -548,7 +554,20 @@ var $defs = {
 				maxLength: 1000
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:govcode:\\d{7}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				oneOf: [
+					{
+						$ref: "#/$defs/urnUuidOnly"
+					},
+					{
+						$ref: "#/$defs/urnGovcode"
+					},
+					{
+						$ref: "#/$defs/urnLei"
+					},
+					{
+						$ref: "#/$defs/urnIsni"
+					}
+				]
 			}
 		},
 		additionalProperties: false
@@ -566,10 +585,26 @@ var $defs = {
 			},
 			name: {
 				type: "string",
-				maxLength: 100
+				maxLength: 1000
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:(?:crn:\\d{13}|brn:\\d{10})|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				oneOf: [
+					{
+						$ref: "#/$defs/urnUuidOnly"
+					},
+					{
+						$ref: "#/$defs/urnCrn"
+					},
+					{
+						$ref: "#/$defs/urnBrn"
+					},
+					{
+						$ref: "#/$defs/urnLei"
+					},
+					{
+						$ref: "#/$defs/urnIsni"
+					}
+				]
 			}
 		},
 		additionalProperties: false
@@ -587,10 +622,23 @@ var $defs = {
 			},
 			name: {
 				type: "string",
-				maxLength: 100
+				maxLength: 1000
 			},
 			"@id": {
-				pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:npo:\\d{10}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+				oneOf: [
+					{
+						$ref: "#/$defs/urnUuidOnly"
+					},
+					{
+						$ref: "#/$defs/urnNpo"
+					},
+					{
+						$ref: "#/$defs/urnLei"
+					},
+					{
+						$ref: "#/$defs/urnIsni"
+					}
+				]
 			}
 		},
 		additionalProperties: false
@@ -608,14 +656,18 @@ var $defs = {
 			},
 			name: {
 				type: "string",
-				maxLength: 100
+				maxLength: 1000
 			},
 			softwareVersion: {
 				type: "string",
 				maxLength: 50
 			},
 			"@id": {
-				pattern: "^urn:model:[a-zA-Z0-9-]+:[a-zA-Z0-9\\.-]+$"
+				oneOf: [
+					{
+						$ref: "#/$defs/urnModel"
+					}
+				]
 			}
 		},
 		additionalProperties: false
@@ -626,7 +678,6 @@ var broV1Schema = {
 	$id: $id,
 	title: title,
 	description: description,
-	$comment: $comment,
 	type: type,
 	oneOf: oneOf,
 	$defs: $defs
@@ -778,4 +829,4 @@ interface KomarcRecord {
  */
 declare function convertBroToKomarc(broPayload: BibliographicReactionObjectBRO): KomarcRecord | KomarcRecord[];
 
-export { type BibliographicReactionObjectBRO, type BoundedText, type BroAbstract, type BroArticle, type BroItemList, broV1Schema as BroV1Schema, CREATOR_TYPES, type Creator, type CreatorCorporation, type CreatorGovernment, type CreatorOrganization, type CreatorPerson, type CreatorRoot, type CreatorSoftware, type CreatorType, type KomarcControlField, type KomarcDataField, type KomarcRecord, type KomarcSubfield, type StrictDateTime, type TerminalIdentifier, type UrnIdentifier, type UrnIdentifier1, type UrnUuidOnly, broV1Schema, convertBroToKomarc, normalizePayload, normalizeUrnScheme, parseFrontmatter, serializeFrontmatter, validateBroSchema };
+export { type BibliographicReactionObjectBRO, type BoundedText, type BroAbstract, type BroArticle, type BroItemList, broV1Schema as BroV1Schema, CREATOR_TYPES, type Creator, type CreatorCorporation, type CreatorGovernment, type CreatorOrganization, type CreatorPerson, type CreatorRoot, type CreatorSoftware, type CreatorType, type KomarcControlField, type KomarcDataField, type KomarcRecord, type KomarcSubfield, type StrictDateTime, type TerminalIdentifier, type UrnBrn, type UrnCrn, type UrnGovcode, type UrnIdentifier, type UrnIdentifier1, type UrnIsni, type UrnLei, type UrnModel, type UrnNpo, type UrnOrcid, type UrnUuidOnly, broV1Schema, convertBroToKomarc, normalizePayload, normalizeUrnScheme, parseFrontmatter, serializeFrontmatter, validateBroSchema };

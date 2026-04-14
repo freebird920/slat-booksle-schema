@@ -47,19 +47,12 @@ var bro_v1_schema_default = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://schema.slat.or.kr/bro/v1/schema.json",
   title: "Bibliographic Reaction Object (BRO)",
-  description: "Bibliographic Reaction Object (BRO)\uC758 \uC6D0\uC2DC\uC2A4\uD0A4\uB9C8 BroItemList, BroArticle, BroAbstract. \uBCF8 \uC2A4\uD0A4\uB9C8\uB294 \uC2DC\uC2A4\uD15C \uC4F0\uAE30(Write/Command) \uC804\uC6A9 \uBAA8\uB378\uC774\uBA70, \uD074\uB77C\uC774\uC5B8\uD2B8 \uC870\uD68C\uB97C \uC704\uD55C \uB0B4\uD3EC(Embedding) \uD2B8\uB9AC \uBCC0\uD658\uC740 \uBBF8\uB4E4\uC6E8\uC5B4 \uACC4\uCE35\uC758 \uCC45\uC784\uC73C\uB85C \uC704\uC784\uD568.",
-  $comment: "[ARCHITECTURE CORE DIRECTIVE] \uBCF8 \uC6D0\uC2DC \uC2A4\uD0A4\uB9C8\uB294 \uC560\uADF8\uB9AC\uAC70\uD2B8 \uB8E8\uD2B8(Aggregate Root) \uAC04\uC758 \uAC1D\uCCB4 \uB0B4\uD3EC(Embedding)\uB97C \uC5C4\uACA9\uD788 \uAE08\uC9C0\uD558\uACE0 \uB2E8\uBC29\uD5A5 URN \uC2DD\uBCC4\uC790(@id) \uCC38\uC870\uB9CC\uC744 \uD5C8\uC6A9\uD55C\uB2E4. \uC774\uB294 \uBD84\uC0B0 DB \uD658\uACBD\uC5D0\uC11C \uD2B8\uB79C\uC7AD\uC158 \uB77D \uACBD\uD569\uACFC \uB2E4\uC911 \uD310\uBCF8 \uC5C5\uB370\uC774\uD2B8 \uC774\uC0C1\uC744 \uBC29\uC5B4\uD558\uAE30 \uC704\uD55C CQRS \uC4F0\uAE30 \uD30C\uC774\uD504\uB77C\uC778\uC758 \uBB3C\uB9AC\uC801 \uC81C\uC57D\uC774\uB2E4. \uD504\uB860\uD2B8\uC5D4\uB4DC \uB80C\uB354\uB9C1 \uCD5C\uC801\uD654\uB97C \uC704\uD55C JSON \uB0B4\uD3EC \uAD6C\uC870(View Model)\uAC00 \uD544\uC694\uD560 \uACBD\uC6B0, \uBCF8 \uC6D0\uC2DC \uC2A4\uD0A4\uB9C8\uB97C \uC218\uC815\uD558\uC9C0 \uB9D0\uACE0 \uB3C4\uBA54\uC778 \uACC4\uCE35\uC5D0\uC11C In-Memory Join\uC744 \uC218\uD589\uD558\uC5EC \uB3C4\uBA54\uC778 \uD2B9\uD654 \uC751\uB2F5 DTO\uB97C \uD569\uC131\uD560 \uAC83.",
+  description: "Bibliographic Reaction Object (BRO)\uC758 \uC6D0\uC2DC\uC2A4\uD0A4\uB9C8 BroItemList, BroArticle, BroAbstract. \uBCF8 \uC2A4\uD0A4\uB9C8\uB294 \uC2DC\uC2A4\uD15C \uC4F0\uAE30(Write/Command) \uC804\uC6A9 \uBAA8\uB378\uC774\uBA70, \uD074\uB77C\uC774\uC5B8\uD2B8 \uC870\uD68C\uB97C \uC704\uD55C \uB0B4\uD3EC(Embedding) \uD2B8\uB9AC \uBCC0\uD658\uC740 \uBBF8\uB4E4\uC6E8\uC5B4 \uACC4\uCE35\uC758 \uCC45\uC784\uC73C\uB85C \uC704\uC784\uD568.\n[ARCHITECTURE CORE DIRECTIVE] \uBCF8 \uC6D0\uC2DC \uC2A4\uD0A4\uB9C8\uB294 \uC560\uADF8\uB9AC\uAC70\uD2B8 \uB8E8\uD2B8(Aggregate Root) \uAC04\uC758 \uAC1D\uCCB4 \uB0B4\uD3EC(Embedding)\uB97C \uC5C4\uACA9\uD788 \uAE08\uC9C0\uD558\uACE0 \uB2E8\uBC29\uD5A5 URN \uC2DD\uBCC4\uC790(@id) \uCC38\uC870\uB9CC\uC744 \uD5C8\uC6A9\uD55C\uB2E4. \uC774\uB294 \uBD84\uC0B0 DB \uD658\uACBD\uC5D0\uC11C \uD2B8\uB79C\uC7AD\uC158 \uB77D \uACBD\uD569\uACFC \uB2E4\uC911 \uD310\uBCF8 \uC5C5\uB370\uC774\uD2B8 \uC774\uC0C1\uC744 \uBC29\uC5B4\uD558\uAE30 \uC704\uD55C CQRS \uC4F0\uAE30 \uD30C\uC774\uD504\uB77C\uC778\uC758 \uBB3C\uB9AC\uC801 \uC81C\uC57D\uC774\uB2E4. \uD504\uB860\uD2B8\uC5D4\uB4DC \uB80C\uB354\uB9C1 \uCD5C\uC801\uD654\uB97C \uC704\uD55C JSON \uB0B4\uD3EC \uAD6C\uC870(View Model)\uAC00 \uD544\uC694\uD560 \uACBD\uC6B0, \uBCF8 \uC6D0\uC2DC \uC2A4\uD0A4\uB9C8\uB97C \uC218\uC815\uD558\uC9C0 \uB9D0\uACE0 \uB3C4\uBA54\uC778 \uACC4\uCE35\uC5D0\uC11C In-Memory Join\uC744 \uC218\uD589\uD558\uC5EC \uB3C4\uBA54\uC778 \uD2B9\uD654 \uC751\uB2F5 DTO\uB97C \uD569\uC131\uD560 \uAC83.",
   type: "object",
   oneOf: [
-    {
-      $ref: "#/$defs/BroItemList"
-    },
-    {
-      $ref: "#/$defs/BroArticle"
-    },
-    {
-      $ref: "#/$defs/BroAbstract"
-    }
+    { $ref: "#/$defs/BroItemList" },
+    { $ref: "#/$defs/BroArticle" },
+    { $ref: "#/$defs/BroAbstract" }
   ],
   $defs: {
     BroItemList: {
@@ -67,15 +60,9 @@ var bro_v1_schema_default = {
       description: "\uB2E4\uC911 \uD0C0\uAC9F \uBB38\uC11C \uD050\uB808\uC774\uC158\uC744 \uC704\uD55C \uC601\uC18D\uC801 \uCEE8\uD14C\uC774\uB108 \uC5D4\uD2F0\uD2F0 (ItemList).",
       required: ["@context", "@type", "creator", "itemListElement"],
       properties: {
-        "@context": {
-          const: "https://schema.org"
-        },
-        "@type": {
-          const: "ItemList"
-        },
-        "@id": {
-          $ref: "#/$defs/urnUuidOnly"
-        },
+        "@context": { const: "https://schema.org" },
+        "@type": { const: "ItemList" },
+        "@id": { $ref: "#/$defs/urnUuidOnly" },
         name: {
           type: "string",
           minLength: 2,
@@ -85,22 +72,16 @@ var bro_v1_schema_default = {
           type: "array",
           minItems: 1,
           uniqueItems: true,
-          items: {
-            $ref: "#/$defs/creatorRoot"
-          }
+          items: { $ref: "#/$defs/creatorRoot" }
         },
         itemListElement: {
           type: "array",
-          minItems: 0,
-          description: "\uB9AC\uC2A4\uD2B8\uC5D0 \uD3EC\uD568\uB41C \uAC1C\uBCC4 \uBB38\uC11C(Article \uB4F1)\uC758 \uC2DD\uBCC4\uC790 \uBAA9\uB85D. \uD398\uC774\uB85C\uB4DC \uC0DD\uC131 \uC2DC \uBC18\uB4DC\uC2DC @id \uAC1D\uCCB4 \uBC30\uC5F4\uB9CC\uC744 \uC804\uC1A1\uD574\uC57C \uD558\uBA70, \uBB38\uC11C \uAC1D\uCCB4 \uC804\uCCB4\uB97C \uBC30\uC5F4 \uB0B4\uBD80\uC5D0 \uB0B4\uD3EC(Embed)\uD558\uB294 \uD398\uC774\uB85C\uB4DC\uB294 \uAC80\uC99D(Validation) \uB2E8\uACC4\uC5D0\uC11C \uAC70\uBD80(Reject)\uB41C\uB2E4.",
-          $comment: "[ANTI-PATTERN PREVENTION] itemListElement \uB0B4\uBD80\uC758 oneOf\uB97C \uD1B5\uD55C Article \uAC1D\uCCB4 \uC9C1\uC811 \uD3EC\uD568 \uD5C8\uC6A9 \uB85C\uC9C1\uC740 \uB370\uC774\uD130 \uB2E8\uD3B8\uD654 \uBC29\uC9C0 \uBC0F \uC2DD\uBCC4\uC790 \uC815\uADDC\uD654\uB97C \uC704\uD574 \uC601\uAD6C \uC0AD\uC81C\uB428. \uBAA8\uB4E0 \uD558\uC704 \uC5D4\uD2F0\uD2F0 \uACB0\uD569\uC740 \uC624\uC9C1 @id \uD3EC\uC778\uD130\uB85C\uB9CC \uC774\uB8E8\uC5B4\uC838\uC57C \uD568.",
+          description: "\uB9AC\uC2A4\uD2B8\uC5D0 \uD3EC\uD568\uB41C \uAC1C\uBCC4 \uBB38\uC11C(Article \uB4F1)\uC758 \uC2DD\uBCC4\uC790 \uBAA9\uB85D. \uD398\uC774\uB85C\uB4DC \uC0DD\uC131 \uC2DC \uBC18\uB4DC\uC2DC @id \uAC1D\uCCB4 \uBC30\uC5F4\uB9CC\uC744 \uC804\uC1A1\uD574\uC57C \uD558\uBA70, \uBB38\uC11C \uAC1D\uCCB4 \uC804\uCCB4\uB97C \uBC30\uC5F4 \uB0B4\uBD80\uC5D0 \uB0B4\uD3EC(Embed)\uD558\uB294 \uD398\uC774\uB85C\uB4DC\uB294 \uAC80\uC99D(Validation) \uB2E8\uACC4\uC5D0\uC11C \uAC70\uBD80(Reject)\uB41C\uB2E4.\n[ANTI-PATTERN PREVENTION] itemListElement \uB0B4\uBD80\uC758 oneOf\uB97C \uD1B5\uD55C Article \uAC1D\uCCB4 \uC9C1\uC811 \uD3EC\uD568 \uD5C8\uC6A9 \uB85C\uC9C1\uC740 \uB370\uC774\uD130 \uB2E8\uD3B8\uD654 \uBC29\uC9C0 \uBC0F \uC2DD\uBCC4\uC790 \uC815\uADDC\uD654\uB97C \uC704\uD574 \uC601\uAD6C \uC0AD\uC81C\uB428. \uBAA8\uB4E0 \uD558\uC704 \uC5D4\uD2F0\uD2F0 \uACB0\uD569\uC740 \uC624\uC9C1 @id \uD3EC\uC778\uD130\uB85C\uB9CC \uC774\uB8E8\uC5B4\uC838\uC57C \uD568.",
           items: {
             type: "object",
             required: ["@id"],
             properties: {
-              "@id": {
-                $ref: "#/$defs/urnUuidOnly"
-              }
+              "@id": { $ref: "#/$defs/urnUuidOnly" }
             }
           }
         }
@@ -118,44 +99,27 @@ var bro_v1_schema_default = {
         "dateCreated"
       ],
       properties: {
-        "@context": {
-          const: "https://schema.org"
-        },
-        "@type": {
-          const: "Article"
-        },
-        "@id": {
-          $ref: "#/$defs/urnUuidOnly"
-        },
-        dateCreated: {
-          $ref: "#/$defs/strictDateTime"
-        },
-        datePublished: {
-          $ref: "#/$defs/strictDateTime"
-        },
+        "@context": { const: "https://schema.org" },
+        "@type": { const: "Article" },
+        "@id": { $ref: "#/$defs/urnUuidOnly" },
+        dateCreated: { $ref: "#/$defs/strictDateTime" },
+        datePublished: { $ref: "#/$defs/strictDateTime" },
         about: {
           type: "array",
           minItems: 1,
           uniqueItems: true,
           description: "\uD30C\uC0DD \uBB38\uC11C\uAC00 \uD0C0\uAC9F\uD305\uD558\uB294 \uCF54\uC5B4 \uC800\uC791\uBB3C \uC5D4\uD2F0\uD2F0. \uB2E4\uC911 \uD310\uBCF8 \uBC14\uC778\uB529 \uC2DC \uBCF5\uC218\uC758 \uC6D0\uC18C\uB97C \uD5C8\uC6A9\uD558\uB098, \uAC01 \uC694\uC18C\uB294 \uB2E8\uC77C URN\uC744 \uC18C\uC720\uD568.",
-          items: {
-            $ref: "#/$defs/terminalIdentifier"
-          }
+          items: { $ref: "#/$defs/terminalIdentifier" }
         },
-        text: {
-          $ref: "#/$defs/boundedText"
-        },
+        text: { $ref: "#/$defs/boundedText" },
         abstract: {
           type: "array",
-          description: "\uD604\uC7AC \uBB38\uC11C(Article)\uC5D0 \uC885\uC18D\uB41C \uD30C\uC0DD \uC694\uC57D\uBCF8\uC758 \uC2DD\uBCC4\uC790(URN) \uBC30\uC5F4. \uC694\uC57D\uBCF8\uC758 \uC0C1\uC138 \uD14D\uC2A4\uD2B8(Text)\uB294 \uD3EC\uD568\uD558\uC9C0 \uC54A\uB294\uB2E4.",
-          $comment: "[DATA REDUNDANCY LOCK] Article \uD398\uC774\uB85C\uB4DC \uB0B4\uC5D0 Abstract \uBCF8\uBB38 \uB0B4\uD3EC\uB97C \uD5C8\uC6A9\uD560 \uACBD\uC6B0 \uBC1C\uC0DD\uD558\uB294 1:N \uAD6C\uC870\uC758 \uB514\uC2A4\uD06C \uC911\uBCF5 \uC801\uC7AC(Redundancy) \uBC0F B-Tree \uBD84\uD560\uC744 \uB9C9\uAE30 \uC704\uD574 \uCCA0\uC800\uD788 \uC2DD\uBCC4\uC790 \uCC38\uC870 \uCCB4\uACC4\uB85C \uACE0\uB9BD\uC2DC\uD0B4.",
+          description: "\uD604\uC7AC \uBB38\uC11C(Article)\uC5D0 \uC885\uC18D\uB41C \uD30C\uC0DD \uC694\uC57D\uBCF8\uC758 \uC2DD\uBCC4\uC790(URN) \uBC30\uC5F4. \uC694\uC57D\uBCF8\uC758 \uC0C1\uC138 \uD14D\uC2A4\uD2B8(Text)\uB294 \uD3EC\uD568\uD558\uC9C0 \uC54A\uB294\uB2E4.\n[DATA REDUNDANCY LOCK] Article \uD398\uC774\uB85C\uB4DC \uB0B4\uC5D0 Abstract \uBCF8\uBB38 \uB0B4\uD3EC\uB97C \uD5C8\uC6A9\uD560 \uACBD\uC6B0 \uBC1C\uC0DD\uD558\uB294 1:N \uAD6C\uC870\uC758 \uB514\uC2A4\uD06C \uC911\uBCF5 \uC801\uC7AC(Redundancy) \uBC0F B-Tree \uBD84\uD560\uC744 \uB9C9\uAE30 \uC704\uD574 \uCCA0\uC800\uD788 \uC2DD\uBCC4\uC790 \uCC38\uC870 \uCCB4\uACC4\uB85C \uACE0\uB9BD\uC2DC\uD0B4.",
           items: {
             type: "object",
             required: ["@id"],
             properties: {
-              "@id": {
-                $ref: "#/$defs/urnUuidOnly"
-              }
+              "@id": { $ref: "#/$defs/urnUuidOnly" }
             }
           }
         },
@@ -163,9 +127,7 @@ var bro_v1_schema_default = {
           type: "array",
           minItems: 1,
           uniqueItems: true,
-          items: {
-            $ref: "#/$defs/creatorRoot"
-          }
+          items: { $ref: "#/$defs/creatorRoot" }
         }
       }
     },
@@ -181,71 +143,38 @@ var bro_v1_schema_default = {
         "isBasedOn"
       ],
       properties: {
-        "@context": {
-          const: "https://schema.org"
-        },
-        "@type": {
-          const: "CreativeWork"
-        },
-        "@id": {
-          $ref: "#/$defs/urnUuidOnly"
-        },
-        dateCreated: {
-          $ref: "#/$defs/strictDateTime"
-        },
-        datePublished: {
-          $ref: "#/$defs/strictDateTime"
-        },
-        text: {
-          $ref: "#/$defs/boundedText"
-        },
-        inLanguage: {
-          type: "string",
-          description: "\uC694\uC57D\uBCF8\uC758 \uC5B8\uC5B4 \uCF54\uB4DC (\uC608: ko, en)"
-        },
+        "@context": { const: "https://schema.org" },
+        "@type": { const: "CreativeWork" },
+        "@id": { $ref: "#/$defs/urnUuidOnly" },
+        dateCreated: { $ref: "#/$defs/strictDateTime" },
+        datePublished: { $ref: "#/$defs/strictDateTime" },
+        text: { $ref: "#/$defs/boundedText" },
         creator: {
           type: "array",
           minItems: 1,
           uniqueItems: true,
-          items: {
-            $ref: "#/$defs/creatorRoot"
-          }
+          items: { $ref: "#/$defs/creatorRoot" }
         },
         isBasedOn: {
           type: "array",
           minItems: 1,
           description: "\uC774 \uC694\uC57D\uC774 \uAE30\uBC18\uD558\uACE0 \uC788\uB294 \uC6D0\uBCF8 \uC5D4\uD2F0\uD2F0(Article \uB610\uB294 \uB3C4\uC11C \uB4F1 CreativeWork)\uC758 \uC2DD\uBCC4\uC790",
-          items: {
-            $ref: "#/$defs/terminalIdentifier"
-          }
+          items: { $ref: "#/$defs/terminalIdentifier" }
         }
       }
     },
-    BASE_PRIMITIVES: {
-      $comment: " 1. \uC6D0\uC2DC \uB370\uC774\uD130 \uACC4\uCE35 (Base Primitives): \uC2DD\uBCC4\uC790, \uB0A0\uC9DC \uD1B5\uC81C"
-    },
     urnIdentifier: {
       type: "string",
-      description: "\uC2DD\uBCC4\uC790 \uAC80\uC99D. \uC2DC\uC2A4\uD15C \uB808\uBCA8\uC758 \uC18C\uBB38\uC790 URN Scheme \uC815\uADDC\uD654\uB97C \uC804\uC81C\uB85C \uD328\uD134\uC744 \uB2E8\uC21C\uD654\uD568.",
+      description: "[BASE_PRIMITIVES: 1. \uC6D0\uC2DC \uB370\uC774\uD130 \uACC4\uCE35 - \uC2DD\uBCC4\uC790, \uB0A0\uC9DC \uD1B5\uC81C] \uC2DD\uBCC4\uC790 \uAC80\uC99D. \uC2DC\uC2A4\uD15C \uB808\uBCA8\uC758 \uC18C\uBB38\uC790 URN Scheme \uC815\uADDC\uD654\uB97C \uC804\uC81C\uB85C \uD328\uD134\uC744 \uB2E8\uC21C\uD654\uD568.",
       oneOf: [
-        {
-          pattern: "^urn:isbn:(?:97[89]-?)?(?:\\d[ -]?){9}[\\dxX]$"
-        },
-        {
-          pattern: "^urn:doi:10\\.\\d{4,9}\\/[-._;()/:A-Za-z0-9]+$"
-        },
-        {
-          pattern: "^urn:uci:[a-zA-Z0-9]{3,10}[:\\-+][a-zA-Z0-9\\-+.:]+$"
-        },
-        {
-          pattern: "^urn:kolis:[a-zA-Z0-9]+$"
-        },
+        { pattern: "^urn:isbn:(?:97[89]-?)?(?:\\d[ -]?){9}[\\dxX]$" },
+        { pattern: "^urn:doi:10\\.\\d{4,9}\\/[-._;()/:A-Za-z0-9]+$" },
+        { pattern: "^urn:uci:[a-zA-Z0-9]{3,10}[:\\-+][a-zA-Z0-9\\-+.:]+$" },
+        { pattern: "^urn:kolis:[a-zA-Z0-9]+$" },
         {
           pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
-        {
-          pattern: "^urn:nlk:[a-zA-Z0-9]+$"
-        }
+        { pattern: "^urn:nlk:[a-zA-Z0-9]+$" }
       ]
     },
     urnUuidOnly: {
@@ -253,8 +182,26 @@ var bro_v1_schema_default = {
       pattern: "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
       description: "UUID v4(\uB79C\uB364) \uBC0F v7(\uD0C0\uC784\uC2A4\uD0EC\uD504) v5(\uB124\uC784\uC2A4\uD398\uC774\uC2A4 \uAE30\uBC18 SHA-1 \uD574\uC2DC)"
     },
+    urnOrcid: {
+      type: "string",
+      pattern: "^urn:orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$"
+    },
+    urnIsni: {
+      type: "string",
+      pattern: "^urn:isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X]$"
+    },
+    urnLei: { type: "string", pattern: "^urn:lei:[0-9A-Z]{20}$" },
+    urnGovcode: { type: "string", pattern: "^urn:kr:govcode:\\d{7}$" },
+    urnCrn: { type: "string", pattern: "^urn:kr:crn:\\d{13}$" },
+    urnBrn: { type: "string", pattern: "^urn:kr:brn:\\d{10}$" },
+    urnNpo: { type: "string", pattern: "^urn:kr:npo:\\d{10}$" },
+    urnModel: {
+      type: "string",
+      pattern: "^urn:model:[a-zA-Z0-9-]+:[a-zA-Z0-9\\.-]+$"
+    },
     strictDateTime: {
       type: "string",
+      format: "date-time",
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})$",
       description: "RFC 3339 \uAE30\uBC18 \uB0A0\uC9DC \uD3EC\uB9F7 \uAC80\uC99D. Z \uB610\uB294 \uC624\uD504\uC14B(+09:00)\uC744 \uAC15\uC81C\uD558\uC5EC \uD0C0\uC784\uC874 \uB204\uB77D\uC73C\uB85C \uC778\uD55C DB \uB370\uC774\uD130 \uC624\uC5FC \uBC29\uC9C0."
     },
@@ -267,14 +214,10 @@ var bro_v1_schema_default = {
         $schema: "https://json-schema.org/draft/2020-12/schema",
         type: "object",
         properties: {
-          title: {
-            type: "string"
-          },
+          title: { type: "string" },
           byline: {
             type: "array",
-            items: {
-              type: "string"
-            }
+            items: { type: "string" }
           },
           language: {
             type: "array",
@@ -287,21 +230,15 @@ var bro_v1_schema_default = {
           },
           keywords: {
             type: "array",
-            items: {
-              type: "string"
-            }
+            items: { type: "string" }
           },
           image: {
             type: "array",
-            items: {
-              type: "string"
-            }
+            items: { type: "string" }
           },
           source_url: {
             type: "array",
-            items: {
-              type: "string"
-            }
+            items: { type: "string" }
           },
           others: {
             type: "array",
@@ -323,97 +260,37 @@ var bro_v1_schema_default = {
         "@type": {
           enum: ["Article", "CreativeWork"]
         },
-        identifier: {
-          $ref: "#/$defs/urnIdentifier"
-        }
+        identifier: { $ref: "#/$defs/urnIdentifier" }
       },
       additionalProperties: false
     },
-    CREATOR_ENTITIES: {
-      $comment: " 2. \uC800\uC790 \uC5D4\uD2F0\uD2F0 \uACC4\uCE35: \uB2E4\uD615\uC131 \uC18D\uC131 \uCD9C\uD608(Property Bleeding) \uC0C1\uD638 \uBC30\uC81C."
-    },
     creatorRoot: {
       type: "object",
+      description: "[CREATOR_ENTITIES: 2. \uC800\uC790 \uC5D4\uD2F0\uD2F0 \uACC4\uCE35] \uB2E4\uD615\uC131 \uC18D\uC131 \uCD9C\uD608(Property Bleeding) \uC0C1\uD638 \uBC30\uC81C.",
       required: ["@type"],
-      discriminator: {
-        propertyName: "@type"
-      },
-      allOf: [
-        {
-          if: {
-            properties: {
-              "@type": {
-                const: "Person"
-              }
-            }
-          },
-          then: {
-            $ref: "#/$defs/creatorPerson"
-          }
-        },
-        {
-          if: {
-            properties: {
-              "@type": {
-                const: "GovernmentOrganization"
-              }
-            }
-          },
-          then: {
-            $ref: "#/$defs/creatorGovernment"
-          }
-        },
-        {
-          if: {
-            properties: {
-              "@type": {
-                const: "Corporation"
-              }
-            }
-          },
-          then: {
-            $ref: "#/$defs/creatorCorporation"
-          }
-        },
-        {
-          if: {
-            properties: {
-              "@type": {
-                const: "Organization"
-              }
-            }
-          },
-          then: {
-            $ref: "#/$defs/creatorOrganization"
-          }
-        },
-        {
-          if: {
-            properties: {
-              "@type": {
-                const: "SoftwareApplication"
-              }
-            }
-          },
-          then: {
-            $ref: "#/$defs/creatorSoftware"
-          }
-        }
+      oneOf: [
+        { $ref: "#/$defs/creatorPerson" },
+        { $ref: "#/$defs/creatorGovernment" },
+        { $ref: "#/$defs/creatorCorporation" },
+        { $ref: "#/$defs/creatorOrganization" },
+        { $ref: "#/$defs/creatorSoftware" }
       ]
     },
     creatorPerson: {
       type: "object",
       required: ["@type", "@id", "name"],
       properties: {
-        "@type": {
-          const: "Person"
-        },
+        "@type": { const: "Person" },
         name: {
           type: "string",
           maxLength: 1e3
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|orcid:\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          oneOf: [
+            { $ref: "#/$defs/urnUuidOnly" },
+            { $ref: "#/$defs/urnOrcid" },
+            { $ref: "#/$defs/urnIsni" }
+          ]
         }
       },
       additionalProperties: false
@@ -422,15 +299,18 @@ var bro_v1_schema_default = {
       type: "object",
       required: ["@type", "@id", "name"],
       properties: {
-        "@type": {
-          const: "GovernmentOrganization"
-        },
+        "@type": { const: "GovernmentOrganization" },
         name: {
           type: "string",
           maxLength: 1e3
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:govcode:\\d{7}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          oneOf: [
+            { $ref: "#/$defs/urnUuidOnly" },
+            { $ref: "#/$defs/urnGovcode" },
+            { $ref: "#/$defs/urnLei" },
+            { $ref: "#/$defs/urnIsni" }
+          ]
         }
       },
       additionalProperties: false
@@ -439,15 +319,19 @@ var bro_v1_schema_default = {
       type: "object",
       required: ["@type", "@id", "name"],
       properties: {
-        "@type": {
-          const: "Corporation"
-        },
+        "@type": { const: "Corporation" },
         name: {
           type: "string",
-          maxLength: 100
+          maxLength: 1e3
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:(?:crn:\\d{13}|brn:\\d{10})|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          oneOf: [
+            { $ref: "#/$defs/urnUuidOnly" },
+            { $ref: "#/$defs/urnCrn" },
+            { $ref: "#/$defs/urnBrn" },
+            { $ref: "#/$defs/urnLei" },
+            { $ref: "#/$defs/urnIsni" }
+          ]
         }
       },
       additionalProperties: false
@@ -456,15 +340,18 @@ var bro_v1_schema_default = {
       type: "object",
       required: ["@type", "@id", "name"],
       properties: {
-        "@type": {
-          const: "Organization"
-        },
+        "@type": { const: "Organization" },
         name: {
           type: "string",
-          maxLength: 100
+          maxLength: 1e3
         },
         "@id": {
-          pattern: "^urn:(?:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[457][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|kr:npo:\\d{10}|lei:[0-9A-Z]{20}|isni:0000[ \\-]?\\d{4}[ \\-]?\\d{4}[ \\-]?\\d{3}[0-9X])$"
+          oneOf: [
+            { $ref: "#/$defs/urnUuidOnly" },
+            { $ref: "#/$defs/urnNpo" },
+            { $ref: "#/$defs/urnLei" },
+            { $ref: "#/$defs/urnIsni" }
+          ]
         }
       },
       additionalProperties: false
@@ -473,19 +360,17 @@ var bro_v1_schema_default = {
       type: "object",
       required: ["@type", "@id", "name"],
       properties: {
-        "@type": {
-          const: "SoftwareApplication"
-        },
+        "@type": { const: "SoftwareApplication" },
         name: {
           type: "string",
-          maxLength: 100
+          maxLength: 1e3
         },
         softwareVersion: {
           type: "string",
           maxLength: 50
         },
         "@id": {
-          pattern: "^urn:model:[a-zA-Z0-9-]+:[a-zA-Z0-9\\.-]+$"
+          oneOf: [{ $ref: "#/$defs/urnModel" }]
         }
       },
       additionalProperties: false
