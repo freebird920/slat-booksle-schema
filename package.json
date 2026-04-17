@@ -1,7 +1,7 @@
 {
   "name": "@slat.or.kr/bro-schema",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "BRO:Bibliographic Reaction Object",
   "repository": {
     "type": "git",
@@ -25,7 +25,6 @@
     "preview": "pnpm run build && vite preview",
     "deploy": "pnpm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
-
     "generate-types": "node scripts/generate-schema-types.cjs",
     "build:npm": "npm run generate-types && node scripts/build-npm-package.js",
     "publish:npm": "pnpm run build:npm && npm publish ./dist-npm --access public"

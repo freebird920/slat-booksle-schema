@@ -126,12 +126,17 @@ function convertArticleToKomarc(article: BroArticle): KomarcRecord {
   // mapped to 100/700 to avoid conflicts with original structural authors.
 
   // 3. 552 Field (Bibliographic Reaction / Local Metadata)
+  // 552 ▾b: 개체명 (name)
   // 552 ▾k: dateCreated (YYYYMMDD)
   // 552 ▾u: URI (article id, if available)
   // 552 ▾h: schema URI
   const subfields552: KomarcSubfield[] = [
     { code: 'h', value: 'https://schema.slat.or.kr/bro/v1/schema.json' }
   ];
+
+  if (article.name) {
+    subfields552.push({ code: 'b', value: article.name });
+  }
 
   if (article.dateCreated) {
     // Truncate ISO 8601 string to YYYYMMDD
@@ -189,12 +194,17 @@ function convertAbstractToKomarc(abstract: BroAbstract): KomarcRecord {
   }
 
   // 3. 552 Field (Bibliographic Reaction / Local Metadata)
+  // 552 ▾b: 개체명 (name)
   // 552 ▾k: dateCreated (YYYYMMDD)
   // 552 ▾o: abstract.text
   // 552 ▾h: schema URI
   const subfields552: KomarcSubfield[] = [
     { code: 'h', value: 'https://schema.slat.or.kr/bro/v1/schema.json' }
   ];
+
+  if (abstract.name) {
+    subfields552.push({ code: 'b', value: abstract.name });
+  }
 
   if (abstract.dateCreated) {
     const truncatedDate = abstract.dateCreated.substring(0, 10).replace(/-/g, '');

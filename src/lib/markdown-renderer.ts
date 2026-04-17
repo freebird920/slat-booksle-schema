@@ -123,8 +123,8 @@ export function renderBroToMarkdown(payload: BroPayload): string {
   if (payload['@type'] === 'Article') {
     const article = payload as BroArticle;
     
-    if (article.aboutTitle) {
-      frontmatterLines.push(`aboutTitle: ${yamlValue(article.aboutTitle)}`);
+    if (article.aboutName) {
+      frontmatterLines.push(`aboutName: ${yamlValue(article.aboutName)}`);
     }
     if (article.aboutCreator) {
       frontmatterLines.push(`aboutCreator: ${yamlValue(article.aboutCreator)}`);

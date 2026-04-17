@@ -46,7 +46,7 @@ const EXAMPLES = {
     "@type": "Article",
     "@id": "urn:uuid:550e8400-e29b-41d4-a716-446655440010",
     name: "AI가 본 현대 사회",
-    aboutTitle: "현대 사회 (원서)",
+    aboutName: "현대 사회 (원서)",
     aboutCreator: "김사회",
     articleByline: "AI Assistant",
     dateCreated: "2026-04-12T12:00:00Z",
@@ -98,7 +98,7 @@ const EXAMPLES = {
     "@type": "Article",
     "@id": "urn:uuid:550e8400-e29b-41d4-a716-446655440077",
     name: "익명 사용자의 리뷰",
-    aboutTitle: "노인과 바다",
+    aboutName: "노인과 바다",
     aboutCreator: "어니스트 헤밍웨이",
     dateCreated: "2026-04-15T09:00:00Z",
     about: [
@@ -137,7 +137,7 @@ const EXAMPLES = {
     "@type": "Article",
     "@id": "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
     name: "영속성 엔티티 예시",
-    aboutTitle: "영속성 설계 교본",
+    aboutName: "영속성 설계 교본",
     aboutCreator: "박영속",
     articleByline: "슬랫 출판사 검토팀",
     dateCreated: "2026-04-12T12:00:00Z",
@@ -303,7 +303,7 @@ function ValidatorSection({
 }) {
   const [metaData, setMetaData] = useState({
     name: "",
-    aboutTitle: "",
+    aboutName: "",
     aboutCreator: "",
     articleByline: "",
     inLanguage: "",
@@ -328,7 +328,7 @@ function ValidatorSection({
       if (parsed["@type"] === "Article") {
         setMetaData({
           name: parsed.name || "",
-          aboutTitle: parsed.aboutTitle || "",
+          aboutName: parsed.aboutName || "",
           aboutCreator: parsed.aboutCreator || "",
           articleByline: parsed.articleByline || "",
           inLanguage: Array.isArray(parsed.inLanguage)
@@ -378,8 +378,8 @@ function ValidatorSection({
 
           if (newMeta.name) parsed.name = newMeta.name;
           else delete parsed.name;
-          if (newMeta.aboutTitle) parsed.aboutTitle = newMeta.aboutTitle;
-          else delete parsed.aboutTitle;
+          if (newMeta.aboutName) parsed.aboutName = newMeta.aboutName;
+          else delete parsed.aboutName;
           if (newMeta.aboutCreator) parsed.aboutCreator = newMeta.aboutCreator;
           else delete parsed.aboutCreator;
           if (newMeta.articleByline) parsed.articleByline = newMeta.articleByline;
@@ -492,10 +492,10 @@ function ValidatorSection({
                       onChange={(v) => handleFormChange({ meta: { name: v } })}
                     />
                     <Field
-                      label="About Title (대상 저작물 제목)"
+                      label="About Name (대상 저작물 제목)"
                       icon={<Type className="h-3 w-3" />}
-                      value={metaData.aboutTitle}
-                      onChange={(v) => handleFormChange({ meta: { aboutTitle: v } })}
+                      value={metaData.aboutName}
+                      onChange={(v) => handleFormChange({ meta: { aboutName: v } })}
                     />
                     <Field
                       label="About Creator (대상 저작물 저자)"

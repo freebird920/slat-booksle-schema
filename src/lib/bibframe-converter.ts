@@ -31,6 +31,11 @@ export interface BibframeIdentifier {
 export interface BibframeInstance {
   "@type": "bf:Instance";
   "bf:identifiedBy": BibframeIdentifier;
+  "bf:title"?: {
+    "@type": "bf:Title";
+    "bf:mainTitle": string;
+  };
+  "bf:responsibilityStatement"?: string;
 }
 
 export interface BibframeNote {
@@ -49,6 +54,10 @@ export interface BibframeWork {
   "bf:originDate": string;
   "bf:changeDate"?: string;
   "bf:contribution": BibframeContribution[];
+  "bf:title"?: {
+    "@type": "bf:Title";
+    "bf:mainTitle": string;
+  };
   "bf:note": BibframeNote;
   [key: string]: unknown;
 }
@@ -107,13 +116,30 @@ export function convertBroToBibframe(payload: BroArticle | BroAbstract): Bibfram
     ? (payload as BroArticle).about
     : (payload as BroAbstract).isBasedOn;
 
-  const targetInstances: BibframeInstance[] = targets.map((t) => ({
-    "@type": "bf:Instance" as const,
-    "bf:identifiedBy": {
-      "@type": "bf:Identifier" as const,
-      "rdf:value": String(t.identifier),
-    },
-  }));
+  const targetInstances: BibframeInstance[] = targets.map((t) => {
+    const instance: BibframeInstance = {
+      "@type": "bf:Instance" as const,
+      "bf:identifiedBy": {
+        "@type": "bf:Identifier" as const,
+        "rdf:value": String(t.identifier),
+      },
+    };
+
+    if (isArticle) {
+      const article = payload as BroArticle;
+      if (article.aboutName) {
+        instance["bf:title"] = {
+          "@type": "bf:Title",
+          "bf:mainTitle": article.aboutName,
+        };
+      }
+      if (article.aboutCreator) {
+        instance["bf:responsibilityStatement"] = article.aboutCreator;
+      }
+    }
+
+    return instance;
+  });
 
   const result: BibframeWork = {
     "@context": {
@@ -127,6 +153,12 @@ export function convertBroToBibframe(payload: BroArticle | BroAbstract): Bibfram
     "bf:originDate": payload.dateCreated,
     ...(payload.dateModified && { "bf:changeDate": payload.dateModified }),
     "bf:contribution": contributions,
+    ...(payload.name && {
+      "bf:title": {
+        "@type": "bf:Title",
+        "bf:mainTitle": payload.name,
+      },
+    }),
     // 순수 본문 매핑 (JSON Native)
     "bf:note": {
       "@type": "bf:Note",

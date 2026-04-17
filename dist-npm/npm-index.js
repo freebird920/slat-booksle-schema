@@ -3,7 +3,7 @@ var bro_v1_schema_default = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://schema.slat.or.kr/bro/v1.0/schema.json",
   title: "Bibliographic Reaction Object (BRO) v1.0",
-  description: "Bibliographic Reaction Object (BRO)\uC758 JSON-LD \uB124\uC774\uD2F0\uBE0C \uC6D0\uC2DC \uC2A4\uD0A4\uB9C8. [ARCHITECTURE DIRECTIVE] 1. \uBCF8 \uC2A4\uD0A4\uB9C8\uB294 \uAC1D\uCCB4 \uB0B4\uD3EC\uB97C \uAE08\uC9C0\uD558\uACE0 @id \uCC38\uC870 \uBB34\uACB0\uC131\uC744 \uBCF4\uC7A5\uD558\uB294 CQRS \uC4F0\uAE30 \uC804\uC6A9 \uBAA8\uB378\uC784. 2. \uAE30\uC874 v1.0\uC758 \uC548\uD2F0\uD328\uD134\uC774\uC5C8\uB358 '\uD14D\uC2A4\uD2B8 \uB0B4 YAML \uC740\uB2C9 \uAD6C\uC870'\uB97C \uC804\uBA74 \uD3D0\uAE30\uD558\uACE0 JSON-LD \uB124\uC774\uD2F0\uBE0C \uAD6C\uC870\uB85C \uB370\uC774\uD130 \uC778\uB371\uC2F1 \uC131\uB2A5\uC744 \uBCF5\uAD6C\uD568. 3. @id\uB294 \uC601\uAD6C \uBD88\uBCC0(Immutable)\uC774\uBA70 \uB370\uC774\uD130 \uAC31\uC2E0 \uC2DC dateModified \uD0C0\uC784\uC2A4\uD0EC\uD504 \uAC31\uC2E0 \uBC0F version \uC18D\uC131 \uC99D\uAC00\uB85C \uBC84\uC804 \uAD00\uB9AC\uD568. 4. Schema.org \uD45C\uC900 \uC5B4\uD718\uB97C \uCD5C\uC0C1\uC704 \uB178\uB4DC\uC5D0\uC11C \uC9C0\uC6D0\uD558\uACE0 \uCEE4\uC2A4\uD140 \uBA54\uD0C0\uB370\uC774\uD130\uB294 additionalProperty(PropertyValue) \uBC30\uC5F4\uB85C \uC218\uC6A9\uD568.",
+  description: "Bibliographic Reaction Object (BRO)\uC758 JSON-LD \uB124\uC774\uD2F0\uBE0C \uC6D0\uC2DC \uC2A4\uD0A4\uB9C8.",
   type: "object",
   oneOf: [
     { $ref: "#/$defs/BroItemList" },
@@ -81,9 +81,9 @@ var bro_v1_schema_default = {
           type: "string",
           description: "\uD30C\uC0DD \uBB38\uC11C \uC790\uCCB4\uC758 \uC81C\uBAA9. \uC2DC\uC2A4\uD15C \uBC18\uD658 \uC2DC Article \uC5D4\uD2F0\uD2F0\uC758 \uCD5C\uC0C1\uC704 \uBA85\uCE6D\uC73C\uB85C \uC0AC\uC6A9\uB428."
         },
-        aboutTitle: {
+        aboutName: {
           type: "string",
-          description: "\uD604\uC7AC \uBB38\uC11C\uAC00 \uD0C0\uAC9F\uD305(about)\uD558\uACE0 \uC788\uB294 \uC6D0\uBCF8 \uCF54\uC5B4 \uC800\uC791\uBB3C\uC758 \uD14D\uC2A4\uD2B8 \uC81C\uBAA9. \uC6D0\uBB38 URN \uCC38\uC870\uAC00 \uC2E4\uD328\uD558\uAC70\uB098 \uC9C0\uC5F0 \uB85C\uB529\uB420 \uACBD\uC6B0\uC758 \uB514\uADF8\uB808\uC774\uB4DC(Degrade) \uCC98\uB9AC\uB97C \uC704\uD55C \uC5ED\uC815\uADDC\uD654 \uB370\uC774\uD130."
+          description: "\uD604\uC7AC \uBB38\uC11C\uAC00 \uD0C0\uAC9F\uD305(about)\uD558\uACE0 \uC788\uB294 \uC6D0\uBCF8 \uCF54\uC5B4 \uC800\uC791\uBB3C\uC758 \uD14D\uC2A4\uD2B8 \uBA85\uCE6D(name). \uC6D0\uBB38 URN \uCC38\uC870\uAC00 \uC2E4\uD328\uD558\uAC70\uB098 \uC9C0\uC5F0 \uB85C\uB529\uB420 \uACBD\uC6B0\uC758 \uB514\uADF8\uB808\uC774\uB4DC(Degrade) \uCC98\uB9AC\uB97C \uC704\uD55C \uC5ED\uC815\uADDC\uD654 \uB370\uC774\uD130. \uC2A4\uD0A4\uB9C8 \uC804\uC5ED\uC758 \uBA85\uBA85 \uADDC\uCE59(Naming Convention) \uD1B5\uC77C\uC131\uC5D0 \uB530\uB77C Title \uB300\uC2E0 Name\uC744 \uC811\uBBF8\uC0AC\uB85C \uAC15\uC81C\uD568."
         },
         aboutCreator: {
           type: "string",
@@ -151,6 +151,10 @@ var bro_v1_schema_default = {
         "@context": { const: "https://schema.org" },
         "@type": { const: "CreativeWork" },
         "@id": { $ref: "#/$defs/urnUuidOnly" },
+        name: {
+          type: "string",
+          description: "\uC694\uC57D \uB370\uC774\uD130\uC758 \uD14D\uC2A4\uD2B8 \uBA85\uCE6D(\uC81C\uBAA9). \uC2A4\uD0A4\uB9C8 \uC804\uC5ED\uC758 \uC2DD\uBCC4 \uD45C\uC81C \uB2E8\uC77C\uD654 \uC815\uCC45\uC5D0 \uB530\uB77C name \uC18D\uC131\uC744 \uD560\uB2F9\uD568."
+        },
         dateCreated: { $ref: "#/$defs/strictDateTime" },
         dateModified: { $ref: "#/$defs/strictDateTime" },
         version: { type: ["string", "number"] },
@@ -449,13 +453,28 @@ function convertBroToBibframe(payload) {
     };
   });
   const targets = isArticle ? payload.about : payload.isBasedOn;
-  const targetInstances = targets.map((t) => ({
-    "@type": "bf:Instance",
-    "bf:identifiedBy": {
-      "@type": "bf:Identifier",
-      "rdf:value": String(t.identifier)
+  const targetInstances = targets.map((t) => {
+    const instance = {
+      "@type": "bf:Instance",
+      "bf:identifiedBy": {
+        "@type": "bf:Identifier",
+        "rdf:value": String(t.identifier)
+      }
+    };
+    if (isArticle) {
+      const article = payload;
+      if (article.aboutName) {
+        instance["bf:title"] = {
+          "@type": "bf:Title",
+          "bf:mainTitle": article.aboutName
+        };
+      }
+      if (article.aboutCreator) {
+        instance["bf:responsibilityStatement"] = article.aboutCreator;
+      }
     }
-  }));
+    return instance;
+  });
   const result = {
     "@context": {
       "bf": "http://id.loc.gov/ontologies/bibframe/",
@@ -468,6 +487,12 @@ function convertBroToBibframe(payload) {
     "bf:originDate": payload.dateCreated,
     ...payload.dateModified && { "bf:changeDate": payload.dateModified },
     "bf:contribution": contributions,
+    ...payload.name && {
+      "bf:title": {
+        "@type": "bf:Title",
+        "bf:mainTitle": payload.name
+      }
+    },
     // 순수 본문 매핑 (JSON Native)
     "bf:note": {
       "@type": "bf:Note",
@@ -531,8 +556,8 @@ function renderBroToMarkdown(payload) {
   }
   if (payload["@type"] === "Article") {
     const article = payload;
-    if (article.aboutTitle) {
-      frontmatterLines.push(`aboutTitle: ${yamlValue(article.aboutTitle)}`);
+    if (article.aboutName) {
+      frontmatterLines.push(`aboutName: ${yamlValue(article.aboutName)}`);
     }
     if (article.aboutCreator) {
       frontmatterLines.push(`aboutCreator: ${yamlValue(article.aboutCreator)}`);
@@ -657,6 +682,9 @@ function convertArticleToKomarc(article) {
   const subfields552 = [
     { code: "h", value: "https://schema.slat.or.kr/bro/v1/schema.json" }
   ];
+  if (article.name) {
+    subfields552.push({ code: "b", value: article.name });
+  }
   if (article.dateCreated) {
     const truncatedDate = article.dateCreated.substring(0, 10).replace(/-/g, "");
     subfields552.push({ code: "k", value: truncatedDate });
@@ -704,6 +732,9 @@ function convertAbstractToKomarc(abstract) {
   const subfields552 = [
     { code: "h", value: "https://schema.slat.or.kr/bro/v1/schema.json" }
   ];
+  if (abstract.name) {
+    subfields552.push({ code: "b", value: abstract.name });
+  }
   if (abstract.dateCreated) {
     const truncatedDate = abstract.dateCreated.substring(0, 10).replace(/-/g, "");
     subfields552.push({ code: "k", value: truncatedDate });

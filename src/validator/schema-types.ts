@@ -9,7 +9,7 @@
  */
 
 /**
- * Bibliographic Reaction Object (BRO)의 JSON-LD 네이티브 원시 스키마. [ARCHITECTURE DIRECTIVE] 1. 본 스키마는 객체 내포를 금지하고 @id 참조 무결성을 보장하는 CQRS 쓰기 전용 모델임. 2. 기존 v1.0의 안티패턴이었던 '텍스트 내 YAML 은닉 구조'를 전면 폐기하고 JSON-LD 네이티브 구조로 데이터 인덱싱 성능을 복구함. 3. @id는 영구 불변(Immutable)이며 데이터 갱신 시 dateModified 타임스탬프 갱신 및 version 속성 증가로 버전 관리함. 4. Schema.org 표준 어휘를 최상위 노드에서 지원하고 커스텀 메타데이터는 additionalProperty(PropertyValue) 배열로 수용함.
+ * Bibliographic Reaction Object (BRO)의 JSON-LD 네이티브 원시 스키마.
  */
 export type BibliographicReactionObjectBROV10 = BroItemList | BroArticle | BroAbstract;
 /**
@@ -182,9 +182,9 @@ export interface BroArticle {
    */
   name?: string;
   /**
-   * 현재 문서가 타겟팅(about)하고 있는 원본 코어 저작물의 텍스트 제목. 원문 URN 참조가 실패하거나 지연 로딩될 경우의 디그레이드(Degrade) 처리를 위한 역정규화 데이터.
+   * 현재 문서가 타겟팅(about)하고 있는 원본 코어 저작물의 텍스트 명칭(name). 원문 URN 참조가 실패하거나 지연 로딩될 경우의 디그레이드(Degrade) 처리를 위한 역정규화 데이터. 스키마 전역의 명명 규칙(Naming Convention) 통일성에 따라 Title 대신 Name을 접미사로 강제함.
    */
-  aboutTitle?: string;
+  aboutName?: string;
   /**
    * 현재 문서가 타겟팅하는 원본 코어 저작물의 원작자 텍스트 표기.
    */
@@ -245,6 +245,10 @@ export interface BroAbstract {
   "@context": "https://schema.org";
   "@type": "CreativeWork";
   "@id": UrnUuidOnly;
+  /**
+   * 요약 데이터의 텍스트 명칭(제목). 스키마 전역의 식별 표제 단일화 정책에 따라 name 속성을 할당함.
+   */
+  name?: string;
   dateCreated: StrictDateTime;
   dateModified?: StrictDateTime;
   version?: string | number;
