@@ -52,18 +52,25 @@ function hasForbiddenFrontMatter(text: string): boolean {
 }
 
 function collectApplicationErrors(payload: unknown) {
-  if (!payload || typeof payload !== "object") return [];
-  const record = payload as Record<string, unknown>;
-  if (typeof record.text === "string" && hasForbiddenFrontMatter(record.text)) {
-    return [
-      {
-        location: "/text",
+  const errors: Array<{ location: string; keyword: string; message: string }> = [];
+
+  function visit(value: unknown, path: string) {
+    if (!value || typeof value !== "object") return;
+    const record = value as Record<string, unknown>;
+    if (typeof record.text === "string" && hasForbiddenFrontMatter(record.text)) {
+      errors.push({
+        location: `${path}/text`,
         keyword: "bro-no-frontmatter",
         message: "BRO text MUST NOT begin with a YAML/TOML front-matter block.",
-      },
-    ];
+      });
+    }
+    if (Array.isArray(record["@graph"])) {
+      record["@graph"].forEach((node, index) => visit(node, `${path}/@graph/${index}`));
+    }
   }
-  return [];
+
+  visit(payload, "");
+  return errors;
 }
 
 app.get("/", (c) =>

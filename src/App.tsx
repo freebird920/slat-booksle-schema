@@ -29,12 +29,20 @@ import { validateBroSchema } from "./validator";
 import type { BibliographicReactionObjectBROV10, BroValidationError } from "./validator/schema-types";
 import "./lib/githubmarkdown.css";
 
-const EXAMPLES = Object.fromEntries(
-  (broExamples as BibliographicReactionObjectBROV10[]).map((example, index) => [
-    `${String(index + 1).padStart(2, "0")}_${example["@type"]}`,
-    example,
-  ]),
-) as Record<string, BibliographicReactionObjectBROV10>;
+function normalizeExamples(examples: unknown): Record<string, BibliographicReactionObjectBROV10> {
+  if (Array.isArray(examples)) {
+    return Object.fromEntries(
+      (examples as BibliographicReactionObjectBROV10[]).map((example, index) => [
+        `${String(index + 1).padStart(2, "0")}_${"@graph" in example ? "BROGraph" : example["@type"]}`,
+        example,
+      ]),
+    );
+  }
+
+  return examples as Record<string, BibliographicReactionObjectBROV10>;
+}
+
+const EXAMPLES = normalizeExamples(broExamples);
 
 const DEFAULT_EXAMPLE_KEY = Object.keys(EXAMPLES)[0];
 
@@ -48,8 +56,8 @@ export default function App() {
 
   const currentType = useMemo(() => {
     try {
-      const parsed = JSON.parse(jsonInput) as { "@type"?: string };
-      return parsed["@type"] ?? "Unknown";
+      const parsed = JSON.parse(jsonInput) as { "@type"?: string; "@graph"?: unknown };
+      return parsed["@type"] ?? (Array.isArray(parsed["@graph"]) ? "BROGraph" : "Unknown");
     } catch {
       return "Invalid JSON";
     }

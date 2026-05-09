@@ -11,30 +11,41 @@
     "dc": "http://purl.org/dc/elements/1.1/",
     "dcterms": "http://purl.org/dc/terms/",
     "bibo": "http://purl.org/ontology/bibo/",
+    "bf": "http://id.loc.gov/ontologies/bibframe/",
     "nlon": "http://lod.nl.go.kr/ontology/",
     "Reaction": "bro:Reaction",
     "ReactionAbstract": "bro:ReactionAbstract",
     "ReactionList": "bro:ReactionList",
+    "UnknownAgent": "bro:UnknownAgent",
     "Person": "schema:Person",
     "Organization": "schema:Organization",
+    "Library": "schema:Library",
+    "GovernmentOrganization": "schema:GovernmentOrganization",
+    "EducationalOrganization": "schema:EducationalOrganization",
+    "School": "schema:School",
+    "Corporation": "schema:Corporation",
     "SoftwareApplication": "schema:SoftwareApplication",
-    "UnknownAgent": "bro:UnknownAgent",
     "Role": "schema:Role",
     "PropertyValue": "schema:PropertyValue",
+    "CreativeWork": "schema:CreativeWork",
     "Book": "schema:Book",
     "Article": "schema:Article",
     "ScholarlyArticle": "schema:ScholarlyArticle",
     "WebPage": "schema:WebPage",
     "Dataset": "schema:Dataset",
-    "CreativeWork": "schema:CreativeWork",
+    "Chapter": "schema:Chapter",
+    "Report": "schema:Report",
+    "Review": "schema:Review",
+    "Recommendation": "schema:Recommendation",
+    "Response": "bro:Response",
+    "Listing": "bro:Listing",
+    "Unspecified": "bro:Unspecified",
     "reactionType": {
       "@id": "bro:reactionType",
       "@type": "@vocab"
     },
-    "Response": "bro:Response",
-    "Listing": "bro:Listing",
-    "Unspecified": "bro:Unspecified",
     "name": "schema:name",
+    "description": "schema:description",
     "byline": "bro:byline",
     "text": "schema:text",
     "textFormat": "schema:encodingFormat",
@@ -42,17 +53,28 @@
       "@id": "schema:creator",
       "@container": "@set"
     },
-    "creatorName": "schema:creator",
-    "publisherName": "schema:publisher",
-    "bookEdition": "schema:bookEdition",
-    "roleName": "schema:roleName",
     "agent": "schema:agent",
-    "identifier": {
-      "@id": "schema:identifier",
+    "roleName": "schema:roleName",
+    "jobTitle": "schema:jobTitle",
+    "affiliation": {
+      "@id": "schema:affiliation",
       "@container": "@set"
     },
+    "knowsAbout": {
+      "@id": "schema:knowsAbout",
+      "@container": "@set"
+    },
+    "credential": {
+      "@id": "bro:credential",
+      "@container": "@set"
+    },
+    "softwareVersion": "schema:softwareVersion",
     "about": {
       "@id": "schema:about",
+      "@container": "@set"
+    },
+    "isPartOf": {
+      "@id": "schema:isPartOf",
       "@container": "@set"
     },
     "isBasedOn": {
@@ -63,9 +85,49 @@
       "@id": "schema:itemListElement",
       "@container": "@list"
     },
-    "keywords": {
-      "@id": "schema:keywords",
+    "selectionCriteria": {
+      "@id": "bro:selectionCriteria",
       "@container": "@set"
+    },
+    "source": {
+      "@id": "prov:wasDerivedFrom",
+      "@container": "@set"
+    },
+    "sourceKey": "bro:sourceKey",
+    "identifier": {
+      "@id": "schema:identifier",
+      "@container": "@set"
+    },
+    "creatorName": "bro:creatorName",
+    "publisherName": "bro:publisherName",
+    "bookEdition": "schema:bookEdition",
+    "datePublished": {
+      "@id": "schema:datePublished",
+      "@type": "xsd:dateTime"
+    },
+    "dateCreated": {
+      "@id": "schema:dateCreated",
+      "@type": "xsd:dateTime"
+    },
+    "dateModified": {
+      "@id": "schema:dateModified",
+      "@type": "xsd:dateTime"
+    },
+    "startDate": {
+      "@id": "schema:startDate",
+      "@type": "xsd:date"
+    },
+    "endDate": {
+      "@id": "schema:endDate",
+      "@type": "xsd:date"
+    },
+    "license": {
+      "@id": "schema:license",
+      "@type": "@id"
+    },
+    "url": {
+      "@id": "schema:url",
+      "@type": "@id"
     },
     "image": {
       "@id": "schema:image",
@@ -81,59 +143,26 @@
       "@id": "schema:inLanguage",
       "@container": "@set"
     },
-    "license": {
-      "@id": "schema:license",
-      "@type": "@id"
+    "audience": {
+      "@id": "schema:audience",
+      "@container": "@set"
     },
-    "dateCreated": {
-      "@id": "schema:dateCreated",
-      "@type": "xsd:dateTime"
+    "genre": {
+      "@id": "schema:genre",
+      "@container": "@set"
     },
-    "dateModified": {
-      "@id": "schema:dateModified",
-      "@type": "xsd:dateTime"
+    "keywords": {
+      "@id": "schema:keywords",
+      "@container": "@set"
     },
-    "datePublished": "schema:datePublished",
-    "startDate": {
-      "@id": "schema:startDate",
-      "@type": "xsd:date"
-    },
-    "endDate": {
-      "@id": "schema:endDate",
-      "@type": "xsd:date"
-    },
-    "softwareVersion": "schema:softwareVersion",
     "additionalProperty": {
       "@id": "schema:additionalProperty",
       "@container": "@set"
     },
     "value": "schema:value",
-    "valueReference": {
-      "@id": "schema:valueReference",
-      "@type": "@id"
-    },
+    "valueReference": "schema:valueReference",
     "propertyID": "schema:propertyID",
     "unitCode": "schema:unitCode",
-    "unitText": "schema:unitText",
-    "bibliographicLevel": {
-      "@id": "bro:bibliographicLevel",
-      "@type": "@vocab"
-    },
-    "Work": "bro:WorkLevel",
-    "Edition": "bro:EditionLevel",
-    "Item": "bro:ItemLevel",
-    "@vocab": "https://schema.org/",
-    "Chapter": "schema:Chapter",
-    "Periodical": "schema:Periodical",
-    "Collection": "schema:Collection",
-    "Report": "schema:Report",
-    "url": {
-      "@id": "schema:url",
-      "@type": "@id",
-      "@container": "@set"
-    },
-    "exampleOfWork": {
-      "@id": "schema:exampleOfWork"
-    }
+    "unitText": "schema:unitText"
   }
 }

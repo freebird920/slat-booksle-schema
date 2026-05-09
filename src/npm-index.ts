@@ -38,6 +38,8 @@ export {
   BRO_VOCAB_IRI,
   CREATOR_TYPES,
   REACTION_TYPES,
+  isBroGraph,
+  isBroNode,
   isBroPayload,
   isReaction,
   isReactionAbstract,

@@ -1,9 +1,10 @@
 import type {
   BasedOnReference,
   BibliographicReactionObjectBROV10,
-  EntityIri,
+  BroEntityReference,
   IdentifierValue,
   ListElement,
+  BroNode,
   Reaction,
   ReactionAbstract,
   ReactionList,
@@ -41,8 +42,11 @@ function yyyymmdd(dateTime: string): string {
 
 function isEntityReference(
   reference: TargetReference | BasedOnReference | ListElement,
-): reference is { readonly "@id": EntityIri; readonly "@type"?: string } {
-  return "@id" in reference;
+): reference is BroEntityReference {
+  return (
+    "@id" in reference &&
+    (reference["@type"] === "Reaction" || reference["@type"] === "ReactionAbstract" || reference["@type"] === "ReactionList")
+  );
 }
 
 function identifierLabel(identifier: IdentifierValue): string {
@@ -103,7 +107,7 @@ function referenceFields(reference: TargetReference | BasedOnReference | ListEle
   return fields;
 }
 
-function base552(payload: BibliographicReactionObjectBROV10): KomarcSubfield[] {
+function base552(payload: BroNode): KomarcSubfield[] {
   const subfields: KomarcSubfield[] = [
     { code: "h", value: BRO_SCHEMA_URI },
     { code: "u", value: payload["@id"] },
@@ -197,16 +201,10 @@ function convertListToKomarc(list: ReactionList): KomarcRecord[] {
   }
 
   return list.itemListElement.map((element) => {
-    const referenceSubfields: KomarcSubfield[] = isEntityReference(element)
-      ? [
-          { code: "u", value: element["@id"] },
-          ...(element["@type"] ? [{ code: "t", value: element["@type"] }] : []),
-        ]
-      : [
-          ...(element.name ? [{ code: "b", value: element.name }] : []),
-          { code: "t", value: element["@type"] },
-          ...identifierValues(element).map((identifier) => ({ code: "u", value: identifier })),
-        ];
+    const referenceSubfields: KomarcSubfield[] = [
+      { code: "u", value: element["@id"] },
+      { code: "t", value: element["@type"] },
+    ];
 
     return {
       controlFields: [],
@@ -226,7 +224,7 @@ function convertListToKomarc(list: ReactionList): KomarcRecord[] {
   });
 }
 
-export function convertBroToKomarc(payload: BibliographicReactionObjectBROV10): KomarcRecord | KomarcRecord[] {
+function convertBroNodeToKomarc(payload: BroNode): KomarcRecord | KomarcRecord[] {
   switch (payload["@type"]) {
     case "Reaction":
       return convertReactionToKomarc(payload);
@@ -235,4 +233,15 @@ export function convertBroToKomarc(payload: BibliographicReactionObjectBROV10): 
     case "ReactionList":
       return convertListToKomarc(payload);
   }
+}
+
+export function convertBroToKomarc(payload: BibliographicReactionObjectBROV10): KomarcRecord | KomarcRecord[] {
+  if ("@graph" in payload) {
+    return payload["@graph"].flatMap((node) => {
+      const converted = convertBroNodeToKomarc(node);
+      return Array.isArray(converted) ? converted : [converted];
+    });
+  }
+
+  return convertBroNodeToKomarc(payload);
 }

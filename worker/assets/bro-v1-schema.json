@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schema.slat.or.kr/bro/v1.0/schema.json",
   "title": "Bibliographic Reaction Object (BRO) v1.0",
-  "description": "JSON Schema for exchanging bibliographic reaction data: recommendation lists, review lists, reading lists, curation notes, reviews, comments, and summaries. The schema keeps the ordinary input model simple while remaining compatible with JSON-LD and bibliographic metadata ecosystems.",
+  "description": "BRO v1.0 exchange schema for bibliographic reaction data. Canonical BRO treats listing, recommendation, selection, award inclusion, review, comment, and unspecified response as Reaction signals. ReactionList groups Reaction or optional ReactionAbstract references. ReactionAbstract is an optional derived summary artifact, not a primary observed reaction. BRO is a lightweight JSON-LD application profile intended to connect fragmented human/institutional bibliographic reaction signals with existing bibliographic standards and commercial metadata systems; it does not replace MARC, MODS, BIBFRAME, ONIX, DataCite, Schema.org, Web Annotation, RLI, or national bibliographic datasets.",
   "type": "object",
   "oneOf": [
     {
@@ -13,11 +13,14 @@
     },
     {
       "$ref": "#/$defs/ReactionList"
+    },
+    {
+      "$ref": "#/$defs/BROGraph"
     }
   ],
   "$defs": {
     "contextRef": {
-      "description": "MUST be the BRO v1.0 context IRI. Extension contexts MAY be appended after the BRO context.",
+      "description": "MUST be the BRO v1.0 context IRI. If extension contexts are used, the BRO context MUST be first so that BRO terms are fixed before extension terms are introduced.",
       "oneOf": [
         {
           "const": "https://schema.slat.or.kr/bro/v1.0/context.jsonld"
@@ -46,38 +49,29 @@
     },
     "uuidUrn": {
       "type": "string",
-      "description": "Lowercase RFC 9562 UUID URN. Versions 1, 4, 5, 6, 7, and 8 are accepted syntactically.",
       "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
     "httpsIri": {
       "type": "string",
-      "description": "HTTPS IRI. Used for BRO entity identifiers and web identifiers where secure canonical IDs are available.",
       "pattern": "^https://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(?::[0-9]{1,5})?(?:/[^\\s<>\"\\\\^`{|}]*)?$",
       "maxLength": 2048
     },
-    "httpIri": {
+    "httpOrHttpsIri": {
       "type": "string",
-      "description": "HTTP IRI. Allowed for external bibliographic/LOD identifiers such as legacy linked-data resource URIs, but not for BRO entity @id.",
-      "pattern": "^http://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(?::[0-9]{1,5})?(?:/[^\\s<>\"\\\\^`{|}]*)?$",
+      "pattern": "^https?://[^\\s<>\"\\\\^`{|}]+$",
       "maxLength": 2048
-    },
-    "webIri": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/httpsIri"
-        },
-        {
-          "$ref": "#/$defs/httpIri"
-        }
-      ]
     },
     "mailtoUri": {
       "type": "string",
       "pattern": "^mailto:[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
       "maxLength": 320
     },
+    "orcidHttpsIri": {
+      "type": "string",
+      "pattern": "^https://orcid\\.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$"
+    },
     "entityIri": {
-      "description": "Identifier for a BRO entity instance. Use a UUID URN or an HTTPS IRI; do not use HTTP for BRO entity @id.",
+      "description": "Identifier for a BRO entity instance. UUID URN or HTTPS IRI.",
       "anyOf": [
         {
           "$ref": "#/$defs/uuidUrn"
@@ -88,13 +82,16 @@
       ]
     },
     "agentIri": {
-      "description": "Identifier for an agent. UUID URN, HTTPS IRI, or mailto URI.",
+      "description": "Identifier for an agent. UUID URN, HTTPS IRI, ORCID HTTPS IRI, or mailto URI.",
       "anyOf": [
         {
           "$ref": "#/$defs/uuidUrn"
         },
         {
           "$ref": "#/$defs/httpsIri"
+        },
+        {
+          "$ref": "#/$defs/orcidHttpsIri"
         },
         {
           "$ref": "#/$defs/mailtoUri"
@@ -104,7 +101,6 @@
     "rfc3339DateTime": {
       "type": "string",
       "format": "date-time",
-      "description": "RFC 3339 date-time with Z or numeric offset. Naive datetimes are rejected.",
       "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:(?:[0-5][0-9]|60)(?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$"
     },
     "rfc3339Date": {
@@ -112,27 +108,12 @@
       "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$"
     },
     "bibliographicDate": {
-      "description": "Bibliographic publication date. External works often have year-only or month-only precision.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/rfc3339DateTime"
-        },
-        {
-          "$ref": "#/$defs/rfc3339Date"
-        },
-        {
-          "type": "string",
-          "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])$"
-        },
-        {
-          "type": "string",
-          "pattern": "^[0-9]{4}$"
-        }
-      ]
+      "description": "Bibliographic date from source metadata. Allows year, year-month, full date, or RFC3339 date-time because publication dates are often partial.",
+      "type": "string",
+      "pattern": "^(?:[0-9]{4}|[0-9]{4}-(?:0[1-9]|1[0-2])|[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])|[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:(?:[0-5][0-9]|60)(?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9]))$"
     },
     "languageTag": {
       "type": "string",
-      "description": "BCP 47 language tag, syntactic validation only.",
       "pattern": "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$",
       "maxLength": 35
     },
@@ -140,10 +121,10 @@
       "type": "array",
       "minItems": 1,
       "maxItems": 20,
-      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/languageTag"
-      }
+      },
+      "uniqueItems": true
     },
     "plainText": {
       "type": "string",
@@ -157,13 +138,63 @@
     },
     "bylineString": {
       "type": "string",
-      "description": "Original attribution display string as it appeared in the source.",
       "minLength": 1,
-      "maxLength": 2000
+      "maxLength": 2000,
+      "description": "Free-form attribution string as it appears in the source. Structured agent metadata belongs in creator."
+    },
+    "sourceKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "Source-local key used for idempotent re-ingestion. It is not a global bibliographic identifier."
+    },
+    "keywordsArray": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "uniqueItems": true
+    },
+    "genreArray": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "uniqueItems": true
+    },
+    "stringArray": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      },
+      "uniqueItems": true
+    },
+    "uriArray": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 200,
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 2048
+      },
+      "uniqueItems": true
     },
     "bodyText": {
       "type": "string",
-      "description": "Body text. It MUST NOT begin with a YAML/TOML front-matter block.",
+      "description": "Main text body. MUST NOT begin with YAML/TOML front matter. Response reactions require at least one non-whitespace character; Listing and Unspecified may be empty.",
       "minLength": 0,
       "maxLength": 300000,
       "not": {
@@ -176,40 +207,86 @@
       "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}(?:\\s*;\\s*[a-zA-Z0-9!#$&^_.+-]+=(?:[a-zA-Z0-9!#$&^_.+-]+|\"[^\"]*\"))*$",
       "maxLength": 255
     },
-    "keywordsArray": {
-      "type": "array",
-      "minItems": 0,
-      "maxItems": 100,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 200
-      }
+    "reactionType": {
+      "type": "string",
+      "enum": [
+        "Response",
+        "Listing",
+        "Unspecified"
+      ],
+      "default": "Unspecified",
+      "description": "Discriminator for the Reaction's primary information function, not for the prose style or length of text."
     },
-    "uriArray": {
-      "type": "array",
-      "maxItems": 200,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "format": "uri"
-      }
+    "workType": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*$",
+      "maxLength": 100,
+      "not": {
+        "enum": [
+          "Reaction",
+          "ReactionAbstract",
+          "ReactionList"
+        ]
+      },
+      "description": "A Schema.org CreativeWork-compatible type token such as Book, Article, ScholarlyArticle, WebPage, Dataset, Report, Chapter, CreativeWork. BRO entity types are excluded here; use entityReference for Reaction/ReactionAbstract/ReactionList."
     },
     "identifierString": {
       "type": "string",
-      "description": "Any identifier or identity link for the referenced resource: ISBN URN, DOI URL, NLK/LOD URI, vendor record ID, UUID URN, HTTPS/HTTP URI, or institutional control number. Use name for titles, not identifier.",
       "minLength": 1,
       "maxLength": 2048,
-      "not": {
-        "pattern": "^\\s*$"
-      }
+      "description": "Identifier token for matching and linking. May be ISBN URN, DOI HTTPS IRI, LOD URI, control number, commercial dataset id, or other source identifier. Do not mix identifiers for different editions/manifestations in one object."
     },
-    "identifierPropertyValue": {
+    "boundedJsonValue": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 10000
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "maxProperties": 50
+              }
+            ]
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 50
+        }
+      ]
+    },
+    "propertyValue": {
       "type": "object",
-      "description": "Structured identifier using schema:PropertyValue. Recommended when the identifier type or authority must be preserved.",
       "required": [
         "@type",
+        "name",
         "value"
       ],
       "properties": {
@@ -224,54 +301,35 @@
         "propertyID": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 500
+          "maxLength": 2048
         },
         "value": {
-          "oneOf": [
-            {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2048
-            },
-            {
-              "type": "number"
-            }
-          ]
+          "$ref": "#/$defs/boundedJsonValue"
         },
         "valueReference": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "unitCode": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "unitText": {
+          "type": "string",
+          "maxLength": 50
         }
       },
-      "anyOf": [
-        {
-          "required": [
-            "name"
-          ]
-        },
-        {
-          "required": [
-            "propertyID"
-          ]
-        }
-      ],
       "additionalProperties": false
     },
     "identifierValue": {
+      "description": "One or more identifiers for the same bibliographic resource or external record.",
       "oneOf": [
         {
           "$ref": "#/$defs/identifierString"
         },
         {
-          "$ref": "#/$defs/identifierPropertyValue"
-        }
-      ]
-    },
-    "identifierSet": {
-      "description": "A single identifier or a set of identifiers for the same referenced entity. BRO does not use a separate sameAs field.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/identifierValue"
+          "$ref": "#/$defs/propertyValue"
         },
         {
           "type": "array",
@@ -279,28 +337,274 @@
           "maxItems": 50,
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/identifierValue"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/identifierString"
+              },
+              {
+                "$ref": "#/$defs/propertyValue"
+              }
+            ]
           }
         }
       ]
     },
-    "agent": {
-      "description": "Creator, curator, issuer, or responsible producer of a BRO object.",
+    "additionalPropertyArray": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/propertyValue"
+      }
+    },
+    "extensionValue": {
+      "description": "Value of colon-prefixed extension properties. Keep extension values bounded.",
       "oneOf": [
         {
-          "$ref": "#/$defs/agentPerson"
+          "type": "string",
+          "maxLength": 10000
         },
         {
-          "$ref": "#/$defs/agentOrganization"
+          "type": "number"
         },
         {
-          "$ref": "#/$defs/agentSoftware"
+          "type": "boolean"
         },
         {
-          "$ref": "#/$defs/agentUnknown"
+          "type": "null"
         },
         {
-          "$ref": "#/$defs/agentRole"
+          "type": "object",
+          "maxProperties": 20,
+          "properties": {
+            "@id": {
+              "type": "string",
+              "format": "uri"
+            },
+            "@type": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "@value": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            },
+            "@language": {
+              "$ref": "#/$defs/languageTag"
+            }
+          },
+          "patternProperties": {
+            "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "maxProperties": 20
+                },
+                {
+                  "type": "array",
+                  "maxItems": 100
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "maxProperties": 20
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "extensionPattern": {
+      "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+        "$ref": "#/$defs/extensionValue"
+      }
+    },
+    "workReference": {
+      "type": "object",
+      "description": "Terminal pointer or partial description of a bibliographic or cultural resource. It is intentionally lighter than a full bibliographic record.",
+      "required": [
+        "@type"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "@id"
+          ]
+        },
+        {
+          "required": [
+            "identifier"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ],
+      "properties": {
+        "@type": {
+          "$ref": "#/$defs/workType"
+        },
+        "@id": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "identifier": {
+          "$ref": "#/$defs/identifierValue"
+        },
+        "name": {
+          "$ref": "#/$defs/plainText"
+        },
+        "creatorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "Human-readable creator/author display string for unresolved or lightweight bibliographic references."
+        },
+        "publisherName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "bookEdition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "datePublished": {
+          "$ref": "#/$defs/bibliographicDate"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "inLanguage": {
+          "$ref": "#/$defs/languageTagArray"
+        },
+        "keywords": {
+          "$ref": "#/$defs/keywordsArray"
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
+        }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+          "$ref": "#/$defs/extensionValue"
+        }
+      },
+      "additionalProperties": false
+    },
+    "workReferenceArray": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/$defs/workReference"
+      },
+      "uniqueItems": true
+    },
+    "reactionOrAbstractReference": {
+      "type": "object",
+      "required": [
+        "@id",
+        "@type"
+      ],
+      "properties": {
+        "@id": {
+          "$ref": "#/$defs/entityIri"
+        },
+        "@type": {
+          "type": "string",
+          "enum": [
+            "Reaction",
+            "ReactionAbstract"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "reactionListReference": {
+      "type": "object",
+      "required": [
+        "@id",
+        "@type"
+      ],
+      "properties": {
+        "@id": {
+          "$ref": "#/$defs/entityIri"
+        },
+        "@type": {
+          "const": "ReactionList"
+        }
+      },
+      "additionalProperties": false
+    },
+    "entityReference": {
+      "type": "object",
+      "required": [
+        "@id",
+        "@type"
+      ],
+      "properties": {
+        "@id": {
+          "$ref": "#/$defs/entityIri"
+        },
+        "@type": {
+          "type": "string",
+          "enum": [
+            "Reaction",
+            "ReactionAbstract",
+            "ReactionList"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "basisReference": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/workReference"
+        },
+        {
+          "$ref": "#/$defs/entityReference"
         }
       ]
     },
@@ -321,6 +625,65 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1000
+        },
+        "jobTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "affiliation": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/agentOrganization"
+          },
+          "uniqueItems": true
+        },
+        "knowsAbout": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "uniqueItems": true
+        },
+        "credential": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "uniqueItems": true
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentUnknown": {
+      "type": "object",
+      "required": [
+        "@type"
+      ],
+      "properties": {
+        "@type": {
+          "const": "UnknownAgent"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
         }
       },
       "additionalProperties": false
@@ -333,7 +696,15 @@
       ],
       "properties": {
         "@type": {
-          "const": "Organization"
+          "type": "string",
+          "enum": [
+            "Organization",
+            "Library",
+            "GovernmentOrganization",
+            "EducationalOrganization",
+            "School",
+            "Corporation"
+          ]
         },
         "@id": {
           "anyOf": [
@@ -341,7 +712,7 @@
               "$ref": "#/$defs/uuidUrn"
             },
             {
-              "$ref": "#/$defs/webIri"
+              "$ref": "#/$defs/httpsIri"
             }
           ]
         },
@@ -349,6 +720,31 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1000
+        },
+        "knowsAbout": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "uniqueItems": true
+        },
+        "credential": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "uniqueItems": true
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
         }
       },
       "additionalProperties": false
@@ -375,27 +771,29 @@
         "softwareVersion": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 50
+          "maxLength": 100
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
         }
       },
       "additionalProperties": false
     },
-    "agentUnknown": {
-      "type": "object",
-      "required": [
-        "@type"
-      ],
-      "properties": {
-        "@type": {
-          "const": "UnknownAgent"
+    "agentInRole": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/agentPerson"
         },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1000
+        {
+          "$ref": "#/$defs/agentUnknown"
+        },
+        {
+          "$ref": "#/$defs/agentOrganization"
+        },
+        {
+          "$ref": "#/$defs/agentSoftware"
         }
-      },
-      "additionalProperties": false
+      ]
     },
     "agentRole": {
       "type": "object",
@@ -419,283 +817,85 @@
           "$ref": "#/$defs/rfc3339Date"
         },
         "agent": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/agentPerson"
-            },
-            {
-              "$ref": "#/$defs/agentOrganization"
-            },
-            {
-              "$ref": "#/$defs/agentSoftware"
-            },
-            {
-              "$ref": "#/$defs/agentUnknown"
-            }
-          ]
+          "$ref": "#/$defs/agentInRole"
+        },
+        "affiliation": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/agentOrganization"
+          },
+          "uniqueItems": true
+        },
+        "knowsAbout": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "uniqueItems": true
+        },
+        "credential": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "uniqueItems": true
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
         }
       },
       "additionalProperties": false
+    },
+    "agent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/agentPerson"
+        },
+        {
+          "$ref": "#/$defs/agentUnknown"
+        },
+        {
+          "$ref": "#/$defs/agentOrganization"
+        },
+        {
+          "$ref": "#/$defs/agentSoftware"
+        },
+        {
+          "$ref": "#/$defs/agentRole"
+        }
+      ]
     },
     "agentArray": {
       "type": "array",
       "minItems": 1,
       "maxItems": 100,
-      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/agent"
-      }
-    },
-    "boundedJsonValue": {
-      "oneOf": [
-        {
-          "type": "string",
-          "maxLength": 10000
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "null"
-        },
-        {
-          "type": "array",
-          "maxItems": 100
-        },
-        {
-          "type": "object",
-          "maxProperties": 50
-        }
-      ]
-    },
-    "additionalPropertyValue": {
-      "type": "object",
-      "required": [
-        "@type",
-        "name",
-        "value"
-      ],
-      "properties": {
-        "@type": {
-          "const": "PropertyValue"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200
-        },
-        "value": {
-          "$ref": "#/$defs/boundedJsonValue"
-        },
-        "propertyID": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        },
-        "valueReference": {
-          "type": "string",
-          "format": "uri"
-        },
-        "unitCode": {
-          "type": "string",
-          "maxLength": 50
-        },
-        "unitText": {
-          "type": "string",
-          "maxLength": 50
-        }
       },
-      "additionalProperties": false
-    },
-    "additionalPropertyArray": {
-      "type": "array",
-      "maxItems": 200,
-      "items": {
-        "$ref": "#/$defs/additionalPropertyValue"
-      }
-    },
-    "extensionValue": {
-      "description": "Value for a colon-prefixed extension property. Kept shallow to prevent payload bombs.",
-      "oneOf": [
-        {
-          "type": "string",
-          "maxLength": 10000
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "null"
-        },
-        {
-          "type": "object",
-          "maxProperties": 20
-        },
-        {
-          "type": "array",
-          "maxItems": 100
-        }
-      ]
-    },
-    "workType": {
-      "type": "string",
-      "pattern": "^[A-Z][A-Za-z0-9]{1,79}$",
-      "description": "Schema.org CreativeWork type token. Recommended values: CreativeWork, Book, Article, ScholarlyArticle, WebPage, Chapter, Periodical, Collection, Dataset, Report. Use CreativeWork when unsure."
-    },
-    "workReference": {
-      "type": "object",
-      "description": "A direct reference to an external bibliographic or cultural work. It is intentionally not limited to books.",
-      "required": [
-        "@type"
-      ],
-      "properties": {
-        "@type": {
-          "$ref": "#/$defs/workType"
-        },
-        "identifier": {
-          "$ref": "#/$defs/identifierSet"
-        },
-        "name": {
-          "$ref": "#/$defs/plainText"
-        },
-        "creatorName": {
-          "oneOf": [
-            {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2000
-            },
-            {
-              "type": "array",
-              "minItems": 1,
-              "maxItems": 50,
-              "uniqueItems": true,
-              "items": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 1000
-              }
-            }
-          ]
-        },
-        "publisherName": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1000
-        },
-        "datePublished": {
-          "$ref": "#/$defs/bibliographicDate"
-        },
-        "bookEdition": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
-        },
-        "inLanguage": {
-          "$ref": "#/$defs/languageTagArray"
-        },
-        "keywords": {
-          "$ref": "#/$defs/keywordsArray"
-        },
-        "image": {
-          "$ref": "#/$defs/uriArray"
-        },
-        "additionalProperty": {
-          "$ref": "#/$defs/additionalPropertyArray"
-        },
-        "bibliographicLevel": {
-          "$ref": "#/$defs/bibliographicLevel"
-        },
-        "url": {
-          "$ref": "#/$defs/webIriSet"
-        },
-        "exampleOfWork": {
-          "$ref": "#/$defs/workIdentityReference"
-        }
-      },
-      "anyOf": [
-        {
-          "required": [
-            "identifier"
-          ]
-        },
-        {
-          "required": [
-            "name"
-          ]
-        }
-      ],
-      "additionalProperties": false
-    },
-    "broReference": {
-      "type": "object",
-      "description": "Reference to another BRO entity. Use this when list items have their own Reaction or ReactionAbstract object.",
-      "required": [
-        "@id"
-      ],
-      "properties": {
-        "@id": {
-          "$ref": "#/$defs/entityIri"
-        },
-        "@type": {
-          "type": "string",
-          "enum": [
-            "Reaction",
-            "ReactionAbstract"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "targetReference": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/workReference"
-        },
-        {
-          "$ref": "#/$defs/broReference"
-        }
-      ]
-    },
-    "listElement": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/workReference"
-        },
-        {
-          "$ref": "#/$defs/listEntityReference"
-        }
-      ]
-    },
-    "reactionType": {
-      "type": "string",
-      "enum": [
-        "Response",
-        "Listing",
-        "Unspecified"
-      ],
-      "default": "Unspecified",
-      "description": "Response = review/comment/critique with non-empty text. Listing = inclusion/recommendation/list-entry action. Unspecified = publisher intentionally declines classification."
+      "uniqueItems": true
     },
     "Reaction": {
       "type": "object",
       "title": "Reaction",
-      "description": "A review, comment, critique, recommendation reason, or list-inclusion reaction about one or more works.",
       "required": [
         "@context",
         "@type",
         "@id",
+        "creator",
+        "dateCreated",
         "reactionType",
         "about",
-        "text",
-        "creator",
-        "dateCreated"
+        "text"
       ],
       "properties": {
         "@context": {
@@ -706,6 +906,9 @@
         },
         "name": {
           "$ref": "#/$defs/plainText"
+        },
+        "description": {
+          "$ref": "#/$defs/longText"
         },
         "byline": {
           "$ref": "#/$defs/bylineString"
@@ -725,8 +928,20 @@
         "license": {
           "$ref": "#/$defs/httpsIri"
         },
+        "source": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
         "inLanguage": {
           "$ref": "#/$defs/languageTagArray"
+        },
+        "audience": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "genre": {
+          "$ref": "#/$defs/genreArray"
         },
         "keywords": {
           "$ref": "#/$defs/keywordsArray"
@@ -747,13 +962,16 @@
           "$ref": "#/$defs/reactionType"
         },
         "about": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "isPartOf": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 5,
-          "uniqueItems": true,
+          "maxItems": 20,
           "items": {
-            "$ref": "#/$defs/targetReference"
-          }
+            "$ref": "#/$defs/reactionListReference"
+          },
+          "uniqueItems": true
         },
         "text": {
           "$ref": "#/$defs/bodyText"
@@ -783,24 +1001,25 @@
           "then": {
             "properties": {
               "text": {
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "\\S"
               }
             }
           }
         }
-      ]
+      ],
+      "description": "A primary bibliographic reaction signal observed or issued by a person, organization, software agent, unknown agent, or role. A Reaction may represent listing/inclusion/selection/award candidacy (reactionType=Listing), an independent review/comment/critique (reactionType=Response), or an intentionally unclassified reaction (reactionType=Unspecified)."
     },
     "ReactionAbstract": {
       "type": "object",
       "title": "ReactionAbstract",
-      "description": "A structured summary derived from a Reaction, ReactionList, or external work.",
       "required": [
         "@context",
         "@type",
         "@id",
-        "text",
         "creator",
         "dateCreated",
+        "text",
         "isBasedOn"
       ],
       "properties": {
@@ -812,6 +1031,9 @@
         },
         "name": {
           "$ref": "#/$defs/plainText"
+        },
+        "description": {
+          "$ref": "#/$defs/longText"
         },
         "byline": {
           "$ref": "#/$defs/bylineString"
@@ -831,8 +1053,20 @@
         "license": {
           "$ref": "#/$defs/httpsIri"
         },
+        "source": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
         "inLanguage": {
           "$ref": "#/$defs/languageTagArray"
+        },
+        "audience": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "genre": {
+          "$ref": "#/$defs/genreArray"
         },
         "keywords": {
           "$ref": "#/$defs/keywordsArray"
@@ -855,7 +1089,8 @@
               "$ref": "#/$defs/bodyText"
             },
             {
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "\\S"
             }
           ]
         },
@@ -865,11 +1100,11 @@
         "isBasedOn": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 10,
-          "uniqueItems": true,
+          "maxItems": 20,
           "items": {
-            "$ref": "#/$defs/basedOnReference"
-          }
+            "$ref": "#/$defs/basisReference"
+          },
+          "uniqueItems": true
         }
       },
       "patternProperties": {
@@ -877,19 +1112,19 @@
           "$ref": "#/$defs/extensionValue"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Optional derived summary artifact. A ReactionAbstract is not a primary observed reaction from a source. Use it only when a summary derived from a Reaction, ReactionList, another ReactionAbstract, or referenced CreativeWork must be exchanged as an independent object with its own creator, creation date, language, license, and provenance."
     },
     "ReactionList": {
       "type": "object",
       "title": "ReactionList",
-      "description": "A persistent recommendation, review, reading, or curation list. The list itself is meaningful metadata.",
       "required": [
         "@context",
         "@type",
         "@id",
         "creator",
-        "itemListElement",
-        "dateCreated"
+        "dateCreated",
+        "itemListElement"
       ],
       "properties": {
         "@context": {
@@ -900,6 +1135,9 @@
         },
         "name": {
           "$ref": "#/$defs/plainText"
+        },
+        "description": {
+          "$ref": "#/$defs/longText"
         },
         "byline": {
           "$ref": "#/$defs/bylineString"
@@ -919,8 +1157,20 @@
         "license": {
           "$ref": "#/$defs/httpsIri"
         },
+        "source": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
         "inLanguage": {
           "$ref": "#/$defs/languageTagArray"
+        },
+        "audience": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "genre": {
+          "$ref": "#/$defs/genreArray"
         },
         "keywords": {
           "$ref": "#/$defs/keywordsArray"
@@ -941,9 +1191,249 @@
           "type": "array",
           "minItems": 0,
           "maxItems": 10000,
+          "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/listElement"
+            "$ref": "#/$defs/reactionOrAbstractReference"
           }
+        },
+        "selectionCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "uniqueItems": true
+        }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+          "$ref": "#/$defs/extensionValue"
+        }
+      },
+      "additionalProperties": false,
+      "description": "A curation container that groups Reaction and optional ReactionAbstract instances by reference. In canonical BRO, even simple list membership is represented as a Reaction with reactionType=Listing; ReactionList.itemListElement references those Reaction objects rather than raw Book/CreativeWork items."
+    },
+    "ReactionNode": {
+      "type": "object",
+      "title": "Reaction",
+      "required": [
+        "@type",
+        "@id",
+        "creator",
+        "dateCreated",
+        "reactionType",
+        "about",
+        "text"
+      ],
+      "properties": {
+        "@context": {
+          "$ref": "#/$defs/contextRef"
+        },
+        "@id": {
+          "$ref": "#/$defs/entityIri"
+        },
+        "name": {
+          "$ref": "#/$defs/plainText"
+        },
+        "description": {
+          "$ref": "#/$defs/longText"
+        },
+        "byline": {
+          "$ref": "#/$defs/bylineString"
+        },
+        "creator": {
+          "$ref": "#/$defs/agentArray"
+        },
+        "dateCreated": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "dateModified": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "datePublished": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "license": {
+          "$ref": "#/$defs/httpsIri"
+        },
+        "source": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
+        "inLanguage": {
+          "$ref": "#/$defs/languageTagArray"
+        },
+        "audience": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "genre": {
+          "$ref": "#/$defs/genreArray"
+        },
+        "keywords": {
+          "$ref": "#/$defs/keywordsArray"
+        },
+        "image": {
+          "$ref": "#/$defs/uriArray"
+        },
+        "citation": {
+          "$ref": "#/$defs/uriArray"
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
+        },
+        "@type": {
+          "const": "Reaction"
+        },
+        "reactionType": {
+          "$ref": "#/$defs/reactionType"
+        },
+        "about": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "isPartOf": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/reactionListReference"
+          },
+          "uniqueItems": true
+        },
+        "text": {
+          "$ref": "#/$defs/bodyText"
+        },
+        "textFormat": {
+          "$ref": "#/$defs/textFormat"
+        }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+          "$ref": "#/$defs/extensionValue"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "reactionType": {
+                "const": "Response"
+              }
+            },
+            "required": [
+              "reactionType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "text": {
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ReactionAbstractNode": {
+      "type": "object",
+      "title": "ReactionAbstract",
+      "required": [
+        "@type",
+        "@id",
+        "creator",
+        "dateCreated",
+        "text",
+        "isBasedOn"
+      ],
+      "properties": {
+        "@context": {
+          "$ref": "#/$defs/contextRef"
+        },
+        "@id": {
+          "$ref": "#/$defs/entityIri"
+        },
+        "name": {
+          "$ref": "#/$defs/plainText"
+        },
+        "description": {
+          "$ref": "#/$defs/longText"
+        },
+        "byline": {
+          "$ref": "#/$defs/bylineString"
+        },
+        "creator": {
+          "$ref": "#/$defs/agentArray"
+        },
+        "dateCreated": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "dateModified": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "datePublished": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "license": {
+          "$ref": "#/$defs/httpsIri"
+        },
+        "source": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
+        "inLanguage": {
+          "$ref": "#/$defs/languageTagArray"
+        },
+        "audience": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "genre": {
+          "$ref": "#/$defs/genreArray"
+        },
+        "keywords": {
+          "$ref": "#/$defs/keywordsArray"
+        },
+        "image": {
+          "$ref": "#/$defs/uriArray"
+        },
+        "citation": {
+          "$ref": "#/$defs/uriArray"
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
+        },
+        "@type": {
+          "const": "ReactionAbstract"
+        },
+        "text": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/bodyText"
+            },
+            {
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          ]
+        },
+        "textFormat": {
+          "$ref": "#/$defs/textFormat"
+        },
+        "isBasedOn": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/basisReference"
+          },
+          "uniqueItems": true
         }
       },
       "patternProperties": {
@@ -953,143 +1443,143 @@
       },
       "additionalProperties": false
     },
-    "bibliographicLevel": {
-      "type": "string",
-      "enum": [
-        "Work",
-        "Edition",
-        "Item",
-        "Unspecified"
-      ],
-      "description": "Approximate bibliographic level of this reference. Work: abstract work level; Edition: manifestation/edition/publication level; Item: holding/copy/item level; Unspecified: source does not allow a decision."
-    },
-    "listEntityReference": {
+    "ReactionListNode": {
       "type": "object",
-      "description": "Reference to a BRO Reaction or ReactionAbstract used as a list element. ReactionList nesting is intentionally not used for list elements in v1.0.",
+      "title": "ReactionList",
       "required": [
-        "@id"
+        "@type",
+        "@id",
+        "creator",
+        "dateCreated",
+        "itemListElement"
       ],
       "properties": {
+        "@context": {
+          "$ref": "#/$defs/contextRef"
+        },
         "@id": {
           "$ref": "#/$defs/entityIri"
-        },
-        "@type": {
-          "type": "string",
-          "enum": [
-            "Reaction",
-            "ReactionAbstract"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "basedOnEntityReference": {
-      "type": "object",
-      "description": "Reference to another BRO entity used as a source for a ReactionAbstract.",
-      "required": [
-        "@id"
-      ],
-      "properties": {
-        "@id": {
-          "$ref": "#/$defs/entityIri"
-        },
-        "@type": {
-          "type": "string",
-          "enum": [
-            "Reaction",
-            "ReactionAbstract",
-            "ReactionList"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "basedOnReference": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/workReference"
-        },
-        {
-          "$ref": "#/$defs/basedOnEntityReference"
-        }
-      ]
-    },
-    "workIdentityReference": {
-      "type": "object",
-      "description": "Optional abstract-work-level reference for an edition, translation, manifestation, or item. Advanced use; general users may omit it.",
-      "required": [
-        "@type"
-      ],
-      "properties": {
-        "@type": {
-          "const": "CreativeWork"
-        },
-        "identifier": {
-          "$ref": "#/$defs/identifierSet"
         },
         "name": {
           "$ref": "#/$defs/plainText"
         },
-        "creatorName": {
-          "oneOf": [
-            {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2000
-            },
-            {
-              "type": "array",
-              "minItems": 1,
-              "maxItems": 50,
-              "uniqueItems": true,
-              "items": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 1000
-              }
-            }
-          ]
-        }
-      },
-      "anyOf": [
-        {
-          "required": [
-            "identifier"
-          ]
+        "description": {
+          "$ref": "#/$defs/longText"
         },
-        {
-          "required": [
-            "name"
-          ]
-        }
-      ],
-      "additionalProperties": false
-    },
-    "webIriArray": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 200,
-      "uniqueItems": true,
-      "items": {
-        "$ref": "#/$defs/webIri"
-      }
-    },
-    "webIriSet": {
-      "description": "One or more HTTP/HTTPS URLs.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/webIri"
+        "byline": {
+          "$ref": "#/$defs/bylineString"
         },
-        {
+        "creator": {
+          "$ref": "#/$defs/agentArray"
+        },
+        "dateCreated": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "dateModified": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "datePublished": {
+          "$ref": "#/$defs/rfc3339DateTime"
+        },
+        "license": {
+          "$ref": "#/$defs/httpsIri"
+        },
+        "source": {
+          "$ref": "#/$defs/workReferenceArray"
+        },
+        "sourceKey": {
+          "$ref": "#/$defs/sourceKey"
+        },
+        "inLanguage": {
+          "$ref": "#/$defs/languageTagArray"
+        },
+        "audience": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "genre": {
+          "$ref": "#/$defs/genreArray"
+        },
+        "keywords": {
+          "$ref": "#/$defs/keywordsArray"
+        },
+        "image": {
+          "$ref": "#/$defs/uriArray"
+        },
+        "citation": {
+          "$ref": "#/$defs/uriArray"
+        },
+        "additionalProperty": {
+          "$ref": "#/$defs/additionalPropertyArray"
+        },
+        "@type": {
+          "const": "ReactionList"
+        },
+        "itemListElement": {
           "type": "array",
-          "minItems": 1,
-          "maxItems": 200,
+          "minItems": 0,
+          "maxItems": 10000,
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/webIri"
+            "$ref": "#/$defs/reactionOrAbstractReference"
           }
+        },
+        "selectionCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "uniqueItems": true
+        }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+          "$ref": "#/$defs/extensionValue"
+        }
+      },
+      "additionalProperties": false
+    },
+    "graphNode": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ReactionNode"
+        },
+        {
+          "$ref": "#/$defs/ReactionAbstractNode"
+        },
+        {
+          "$ref": "#/$defs/ReactionListNode"
         }
       ]
+    },
+    "BROGraph": {
+      "type": "object",
+      "title": "BROGraph",
+      "description": "JSON-LD graph document containing a connected exchange set, such as a ReactionList and its Listing/Response Reactions plus optional derived ReactionAbstract summaries.",
+      "required": [
+        "@context",
+        "@graph"
+      ],
+      "properties": {
+        "@context": {
+          "$ref": "#/$defs/contextRef"
+        },
+        "@id": {
+          "$ref": "#/$defs/entityIri"
+        },
+        "@graph": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/graphNode"
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

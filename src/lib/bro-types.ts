@@ -7,11 +7,12 @@ import type {
   AgentRole,
   AgentSoftware,
   AgentUnknown,
-  // BibliographicReactionObjectBROV10,
+  BroDocument,
   BroPayload,
   BroReaction,
   BroReactionAbstract,
   BroReactionList,
+  BroNode,
   ReactionType,
   WorkReference,
 } from "../validator/schema-types";
@@ -36,6 +37,11 @@ export const AGENT_TYPES = [
   "Person",
   "UnknownAgent",
   "Organization",
+  "Library",
+  "GovernmentOrganization",
+  "EducationalOrganization",
+  "School",
+  "Corporation",
   "SoftwareApplication",
   "Role",
 ] as const;
@@ -53,22 +59,30 @@ export type CreatorSoftware = AgentSoftware;
 export type CreatorRole = AgentRole;
 export type TerminalIdentifier = WorkReference;
 
-export function isBroPayload(value: unknown): value is BroPayload {
+export function isBroNode(value: unknown): value is BroNode {
   if (!value || typeof value !== "object") return false;
   const type = (value as Record<string, unknown>)["@type"];
   return type === "Reaction" || type === "ReactionAbstract" || type === "ReactionList";
 }
 
+export function isBroGraph(value: unknown): value is Extract<BroDocument, { "@graph": unknown }> {
+  return Boolean(value && typeof value === "object" && Array.isArray((value as Record<string, unknown>)["@graph"]));
+}
+
+export function isBroPayload(value: unknown): value is BroPayload {
+  return isBroNode(value) || isBroGraph(value);
+}
+
 export function isReaction(value: unknown): value is BroReaction {
-  return isBroPayload(value) && value["@type"] === "Reaction";
+  return isBroNode(value) && value["@type"] === "Reaction";
 }
 
 export function isReactionAbstract(value: unknown): value is BroReactionAbstract {
-  return isBroPayload(value) && value["@type"] === "ReactionAbstract";
+  return isBroNode(value) && value["@type"] === "ReactionAbstract";
 }
 
 export function isReactionList(value: unknown): value is BroReactionList {
-  return isBroPayload(value) && value["@type"] === "ReactionList";
+  return isBroNode(value) && value["@type"] === "ReactionList";
 }
 
 export type {
@@ -81,6 +95,8 @@ export type {
   AgentSoftware,
   AgentUnknown,
   BibliographicReactionObjectBROV10 as BibliographicReactionObjectBRO,
+  BroDocument,
+  BroNode,
   BroPayload,
   BroReaction,
   BroReactionAbstract,

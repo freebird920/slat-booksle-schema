@@ -1,7 +1,7 @@
 var $schema = "https://json-schema.org/draft/2020-12/schema";
 var $id = "https://schema.slat.or.kr/bro/v1.0/schema.json";
 var title = "Bibliographic Reaction Object (BRO) v1.0";
-var description = "JSON Schema for exchanging bibliographic reaction data: recommendation lists, review lists, reading lists, curation notes, reviews, comments, and summaries. The schema keeps the ordinary input model simple while remaining compatible with JSON-LD and bibliographic metadata ecosystems.";
+var description = "BRO v1.0 exchange schema for bibliographic reaction data. Canonical BRO treats listing, recommendation, selection, award inclusion, review, comment, and unspecified response as Reaction signals. ReactionList groups Reaction or optional ReactionAbstract references. ReactionAbstract is an optional derived summary artifact, not a primary observed reaction. BRO is a lightweight JSON-LD application profile intended to connect fragmented human/institutional bibliographic reaction signals with existing bibliographic standards and commercial metadata systems; it does not replace MARC, MODS, BIBFRAME, ONIX, DataCite, Schema.org, Web Annotation, RLI, or national bibliographic datasets.";
 var type = "object";
 var oneOf = [
 	{
@@ -12,11 +12,14 @@ var oneOf = [
 	},
 	{
 		$ref: "#/$defs/ReactionList"
+	},
+	{
+		$ref: "#/$defs/BROGraph"
 	}
 ];
 var $defs = {
 	contextRef: {
-		description: "MUST be the BRO v1.0 context IRI. Extension contexts MAY be appended after the BRO context.",
+		description: "MUST be the BRO v1.0 context IRI. If extension contexts are used, the BRO context MUST be first so that BRO terms are fixed before extension terms are introduced.",
 		oneOf: [
 			{
 				"const": "https://schema.slat.or.kr/bro/v1.0/context.jsonld"
@@ -45,38 +48,29 @@ var $defs = {
 	},
 	uuidUrn: {
 		type: "string",
-		description: "Lowercase RFC 9562 UUID URN. Versions 1, 4, 5, 6, 7, and 8 are accepted syntactically.",
 		pattern: "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 	},
 	httpsIri: {
 		type: "string",
-		description: "HTTPS IRI. Used for BRO entity identifiers and web identifiers where secure canonical IDs are available.",
 		pattern: "^https://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(?::[0-9]{1,5})?(?:/[^\\s<>\"\\\\^`{|}]*)?$",
 		maxLength: 2048
 	},
-	httpIri: {
+	httpOrHttpsIri: {
 		type: "string",
-		description: "HTTP IRI. Allowed for external bibliographic/LOD identifiers such as legacy linked-data resource URIs, but not for BRO entity @id.",
-		pattern: "^http://(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(?::[0-9]{1,5})?(?:/[^\\s<>\"\\\\^`{|}]*)?$",
+		pattern: "^https?://[^\\s<>\"\\\\^`{|}]+$",
 		maxLength: 2048
-	},
-	webIri: {
-		anyOf: [
-			{
-				$ref: "#/$defs/httpsIri"
-			},
-			{
-				$ref: "#/$defs/httpIri"
-			}
-		]
 	},
 	mailtoUri: {
 		type: "string",
 		pattern: "^mailto:[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
 		maxLength: 320
 	},
+	orcidHttpsIri: {
+		type: "string",
+		pattern: "^https://orcid\\.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$"
+	},
 	entityIri: {
-		description: "Identifier for a BRO entity instance. Use a UUID URN or an HTTPS IRI; do not use HTTP for BRO entity @id.",
+		description: "Identifier for a BRO entity instance. UUID URN or HTTPS IRI.",
 		anyOf: [
 			{
 				$ref: "#/$defs/uuidUrn"
@@ -87,13 +81,16 @@ var $defs = {
 		]
 	},
 	agentIri: {
-		description: "Identifier for an agent. UUID URN, HTTPS IRI, or mailto URI.",
+		description: "Identifier for an agent. UUID URN, HTTPS IRI, ORCID HTTPS IRI, or mailto URI.",
 		anyOf: [
 			{
 				$ref: "#/$defs/uuidUrn"
 			},
 			{
 				$ref: "#/$defs/httpsIri"
+			},
+			{
+				$ref: "#/$defs/orcidHttpsIri"
 			},
 			{
 				$ref: "#/$defs/mailtoUri"
@@ -103,7 +100,6 @@ var $defs = {
 	rfc3339DateTime: {
 		type: "string",
 		format: "date-time",
-		description: "RFC 3339 date-time with Z or numeric offset. Naive datetimes are rejected.",
 		pattern: "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:(?:[0-5][0-9]|60)(?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$"
 	},
 	rfc3339Date: {
@@ -111,27 +107,12 @@ var $defs = {
 		pattern: "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$"
 	},
 	bibliographicDate: {
-		description: "Bibliographic publication date. External works often have year-only or month-only precision.",
-		oneOf: [
-			{
-				$ref: "#/$defs/rfc3339DateTime"
-			},
-			{
-				$ref: "#/$defs/rfc3339Date"
-			},
-			{
-				type: "string",
-				pattern: "^[0-9]{4}-(?:0[1-9]|1[0-2])$"
-			},
-			{
-				type: "string",
-				pattern: "^[0-9]{4}$"
-			}
-		]
+		description: "Bibliographic date from source metadata. Allows year, year-month, full date, or RFC3339 date-time because publication dates are often partial.",
+		type: "string",
+		pattern: "^(?:[0-9]{4}|[0-9]{4}-(?:0[1-9]|1[0-2])|[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])|[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:(?:[0-5][0-9]|60)(?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9]))$"
 	},
 	languageTag: {
 		type: "string",
-		description: "BCP 47 language tag, syntactic validation only.",
 		pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{1,8})*$",
 		maxLength: 35
 	},
@@ -139,10 +120,10 @@ var $defs = {
 		type: "array",
 		minItems: 1,
 		maxItems: 20,
-		uniqueItems: true,
 		items: {
 			$ref: "#/$defs/languageTag"
-		}
+		},
+		uniqueItems: true
 	},
 	plainText: {
 		type: "string",
@@ -156,13 +137,63 @@ var $defs = {
 	},
 	bylineString: {
 		type: "string",
-		description: "Original attribution display string as it appeared in the source.",
 		minLength: 1,
-		maxLength: 2000
+		maxLength: 2000,
+		description: "Free-form attribution string as it appears in the source. Structured agent metadata belongs in creator."
+	},
+	sourceKey: {
+		type: "string",
+		minLength: 1,
+		maxLength: 1000,
+		description: "Source-local key used for idempotent re-ingestion. It is not a global bibliographic identifier."
+	},
+	keywordsArray: {
+		type: "array",
+		minItems: 0,
+		maxItems: 100,
+		items: {
+			type: "string",
+			minLength: 1,
+			maxLength: 200
+		},
+		uniqueItems: true
+	},
+	genreArray: {
+		type: "array",
+		minItems: 1,
+		maxItems: 50,
+		items: {
+			type: "string",
+			minLength: 1,
+			maxLength: 200
+		},
+		uniqueItems: true
+	},
+	stringArray: {
+		type: "array",
+		minItems: 1,
+		maxItems: 100,
+		items: {
+			type: "string",
+			minLength: 1,
+			maxLength: 2000
+		},
+		uniqueItems: true
+	},
+	uriArray: {
+		type: "array",
+		minItems: 0,
+		maxItems: 200,
+		items: {
+			type: "string",
+			format: "uri",
+			maxLength: 2048
+		},
+		uniqueItems: true
 	},
 	bodyText: {
 		type: "string",
-		description: "Body text. It MUST NOT begin with a YAML/TOML front-matter block.",
+		description: "Main text body. MUST NOT begin with YAML/TOML front matter. Response reactions require at least one non-whitespace character; Listing and Unspecified may be empty.",
 		minLength: 0,
 		maxLength: 300000,
 		not: {
@@ -175,40 +206,86 @@ var $defs = {
 		pattern: "^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]{0,126}(?:\\s*;\\s*[a-zA-Z0-9!#$&^_.+-]+=(?:[a-zA-Z0-9!#$&^_.+-]+|\"[^\"]*\"))*$",
 		maxLength: 255
 	},
-	keywordsArray: {
-		type: "array",
-		minItems: 0,
-		maxItems: 100,
-		uniqueItems: true,
-		items: {
-			type: "string",
-			minLength: 1,
-			maxLength: 200
-		}
+	reactionType: {
+		type: "string",
+		"enum": [
+			"Response",
+			"Listing",
+			"Unspecified"
+		],
+		"default": "Unspecified",
+		description: "Discriminator for the Reaction's primary information function, not for the prose style or length of text."
 	},
-	uriArray: {
-		type: "array",
-		maxItems: 200,
-		uniqueItems: true,
-		items: {
-			type: "string",
-			format: "uri"
-		}
+	workType: {
+		type: "string",
+		pattern: "^[A-Z][A-Za-z0-9]*$",
+		maxLength: 100,
+		not: {
+			"enum": [
+				"Reaction",
+				"ReactionAbstract",
+				"ReactionList"
+			]
+		},
+		description: "A Schema.org CreativeWork-compatible type token such as Book, Article, ScholarlyArticle, WebPage, Dataset, Report, Chapter, CreativeWork. BRO entity types are excluded here; use entityReference for Reaction/ReactionAbstract/ReactionList."
 	},
 	identifierString: {
 		type: "string",
-		description: "Any identifier or identity link for the referenced resource: ISBN URN, DOI URL, NLK/LOD URI, vendor record ID, UUID URN, HTTPS/HTTP URI, or institutional control number. Use name for titles, not identifier.",
 		minLength: 1,
 		maxLength: 2048,
-		not: {
-			pattern: "^\\s*$"
-		}
+		description: "Identifier token for matching and linking. May be ISBN URN, DOI HTTPS IRI, LOD URI, control number, commercial dataset id, or other source identifier. Do not mix identifiers for different editions/manifestations in one object."
 	},
-	identifierPropertyValue: {
+	boundedJsonValue: {
+		oneOf: [
+			{
+				type: "string",
+				maxLength: 10000
+			},
+			{
+				type: "number"
+			},
+			{
+				type: "boolean"
+			},
+			{
+				type: "null"
+			},
+			{
+				type: "array",
+				maxItems: 100,
+				items: {
+					oneOf: [
+						{
+							type: "string",
+							maxLength: 10000
+						},
+						{
+							type: "number"
+						},
+						{
+							type: "boolean"
+						},
+						{
+							type: "null"
+						},
+						{
+							type: "object",
+							maxProperties: 50
+						}
+					]
+				}
+			},
+			{
+				type: "object",
+				maxProperties: 50
+			}
+		]
+	},
+	propertyValue: {
 		type: "object",
-		description: "Structured identifier using schema:PropertyValue. Recommended when the identifier type or authority must be preserved.",
 		required: [
 			"@type",
+			"name",
 			"value"
 		],
 		properties: {
@@ -223,54 +300,35 @@ var $defs = {
 			propertyID: {
 				type: "string",
 				minLength: 1,
-				maxLength: 500
+				maxLength: 2048
 			},
 			value: {
-				oneOf: [
-					{
-						type: "string",
-						minLength: 1,
-						maxLength: 2048
-					},
-					{
-						type: "number"
-					}
-				]
+				$ref: "#/$defs/boundedJsonValue"
 			},
 			valueReference: {
 				type: "string",
-				format: "uri"
+				format: "uri",
+				maxLength: 2048
+			},
+			unitCode: {
+				type: "string",
+				maxLength: 50
+			},
+			unitText: {
+				type: "string",
+				maxLength: 50
 			}
 		},
-		anyOf: [
-			{
-				required: [
-					"name"
-				]
-			},
-			{
-				required: [
-					"propertyID"
-				]
-			}
-		],
 		additionalProperties: false
 	},
 	identifierValue: {
+		description: "One or more identifiers for the same bibliographic resource or external record.",
 		oneOf: [
 			{
 				$ref: "#/$defs/identifierString"
 			},
 			{
-				$ref: "#/$defs/identifierPropertyValue"
-			}
-		]
-	},
-	identifierSet: {
-		description: "A single identifier or a set of identifiers for the same referenced entity. BRO does not use a separate sameAs field.",
-		oneOf: [
-			{
-				$ref: "#/$defs/identifierValue"
+				$ref: "#/$defs/propertyValue"
 			},
 			{
 				type: "array",
@@ -278,28 +336,274 @@ var $defs = {
 				maxItems: 50,
 				uniqueItems: true,
 				items: {
-					$ref: "#/$defs/identifierValue"
+					oneOf: [
+						{
+							$ref: "#/$defs/identifierString"
+						},
+						{
+							$ref: "#/$defs/propertyValue"
+						}
+					]
 				}
 			}
 		]
 	},
-	agent: {
-		description: "Creator, curator, issuer, or responsible producer of a BRO object.",
+	additionalPropertyArray: {
+		type: "array",
+		maxItems: 200,
+		items: {
+			$ref: "#/$defs/propertyValue"
+		}
+	},
+	extensionValue: {
+		description: "Value of colon-prefixed extension properties. Keep extension values bounded.",
 		oneOf: [
 			{
-				$ref: "#/$defs/agentPerson"
+				type: "string",
+				maxLength: 10000
 			},
 			{
-				$ref: "#/$defs/agentOrganization"
+				type: "number"
 			},
 			{
-				$ref: "#/$defs/agentSoftware"
+				type: "boolean"
 			},
 			{
-				$ref: "#/$defs/agentUnknown"
+				type: "null"
 			},
 			{
-				$ref: "#/$defs/agentRole"
+				type: "object",
+				maxProperties: 20,
+				properties: {
+					"@id": {
+						type: "string",
+						format: "uri"
+					},
+					"@type": {
+						type: "string",
+						maxLength: 200
+					},
+					"@value": {
+						type: [
+							"string",
+							"number",
+							"boolean"
+						]
+					},
+					"@language": {
+						$ref: "#/$defs/languageTag"
+					}
+				},
+				patternProperties: {
+					"^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+						oneOf: [
+							{
+								type: "string",
+								maxLength: 10000
+							},
+							{
+								type: "number"
+							},
+							{
+								type: "boolean"
+							},
+							{
+								type: "null"
+							},
+							{
+								type: "object",
+								maxProperties: 20
+							},
+							{
+								type: "array",
+								maxItems: 100
+							}
+						]
+					}
+				},
+				additionalProperties: false
+			},
+			{
+				type: "array",
+				maxItems: 100,
+				items: {
+					oneOf: [
+						{
+							type: "string",
+							maxLength: 10000
+						},
+						{
+							type: "number"
+						},
+						{
+							type: "boolean"
+						},
+						{
+							type: "object",
+							maxProperties: 20
+						}
+					]
+				}
+			}
+		]
+	},
+	extensionPattern: {
+		"^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+			$ref: "#/$defs/extensionValue"
+		}
+	},
+	workReference: {
+		type: "object",
+		description: "Terminal pointer or partial description of a bibliographic or cultural resource. It is intentionally lighter than a full bibliographic record.",
+		required: [
+			"@type"
+		],
+		anyOf: [
+			{
+				required: [
+					"@id"
+				]
+			},
+			{
+				required: [
+					"identifier"
+				]
+			},
+			{
+				required: [
+					"name"
+				]
+			}
+		],
+		properties: {
+			"@type": {
+				$ref: "#/$defs/workType"
+			},
+			"@id": {
+				type: "string",
+				format: "uri",
+				maxLength: 2048
+			},
+			identifier: {
+				$ref: "#/$defs/identifierValue"
+			},
+			name: {
+				$ref: "#/$defs/plainText"
+			},
+			creatorName: {
+				type: "string",
+				minLength: 1,
+				maxLength: 2000,
+				description: "Human-readable creator/author display string for unresolved or lightweight bibliographic references."
+			},
+			publisherName: {
+				type: "string",
+				minLength: 1,
+				maxLength: 2000
+			},
+			bookEdition: {
+				type: "string",
+				minLength: 1,
+				maxLength: 1000
+			},
+			datePublished: {
+				$ref: "#/$defs/bibliographicDate"
+			},
+			url: {
+				type: "string",
+				format: "uri",
+				maxLength: 2048
+			},
+			inLanguage: {
+				$ref: "#/$defs/languageTagArray"
+			},
+			keywords: {
+				$ref: "#/$defs/keywordsArray"
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
+			}
+		},
+		patternProperties: {
+			"^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+				$ref: "#/$defs/extensionValue"
+			}
+		},
+		additionalProperties: false
+	},
+	workReferenceArray: {
+		type: "array",
+		minItems: 1,
+		maxItems: 20,
+		items: {
+			$ref: "#/$defs/workReference"
+		},
+		uniqueItems: true
+	},
+	reactionOrAbstractReference: {
+		type: "object",
+		required: [
+			"@id",
+			"@type"
+		],
+		properties: {
+			"@id": {
+				$ref: "#/$defs/entityIri"
+			},
+			"@type": {
+				type: "string",
+				"enum": [
+					"Reaction",
+					"ReactionAbstract"
+				]
+			}
+		},
+		additionalProperties: false
+	},
+	reactionListReference: {
+		type: "object",
+		required: [
+			"@id",
+			"@type"
+		],
+		properties: {
+			"@id": {
+				$ref: "#/$defs/entityIri"
+			},
+			"@type": {
+				"const": "ReactionList"
+			}
+		},
+		additionalProperties: false
+	},
+	entityReference: {
+		type: "object",
+		required: [
+			"@id",
+			"@type"
+		],
+		properties: {
+			"@id": {
+				$ref: "#/$defs/entityIri"
+			},
+			"@type": {
+				type: "string",
+				"enum": [
+					"Reaction",
+					"ReactionAbstract",
+					"ReactionList"
+				]
+			}
+		},
+		additionalProperties: false
+	},
+	basisReference: {
+		oneOf: [
+			{
+				$ref: "#/$defs/workReference"
+			},
+			{
+				$ref: "#/$defs/entityReference"
 			}
 		]
 	},
@@ -320,6 +624,65 @@ var $defs = {
 				type: "string",
 				minLength: 1,
 				maxLength: 1000
+			},
+			jobTitle: {
+				type: "string",
+				minLength: 1,
+				maxLength: 1000
+			},
+			affiliation: {
+				type: "array",
+				minItems: 1,
+				maxItems: 20,
+				items: {
+					$ref: "#/$defs/agentOrganization"
+				},
+				uniqueItems: true
+			},
+			knowsAbout: {
+				type: "array",
+				minItems: 1,
+				maxItems: 100,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 500
+				},
+				uniqueItems: true
+			},
+			credential: {
+				type: "array",
+				minItems: 1,
+				maxItems: 50,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 1000
+				},
+				uniqueItems: true
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
+			}
+		},
+		additionalProperties: false
+	},
+	agentUnknown: {
+		type: "object",
+		required: [
+			"@type"
+		],
+		properties: {
+			"@type": {
+				"const": "UnknownAgent"
+			},
+			name: {
+				type: "string",
+				minLength: 1,
+				maxLength: 1000
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
 			}
 		},
 		additionalProperties: false
@@ -332,7 +695,15 @@ var $defs = {
 		],
 		properties: {
 			"@type": {
-				"const": "Organization"
+				type: "string",
+				"enum": [
+					"Organization",
+					"Library",
+					"GovernmentOrganization",
+					"EducationalOrganization",
+					"School",
+					"Corporation"
+				]
 			},
 			"@id": {
 				anyOf: [
@@ -340,7 +711,7 @@ var $defs = {
 						$ref: "#/$defs/uuidUrn"
 					},
 					{
-						$ref: "#/$defs/webIri"
+						$ref: "#/$defs/httpsIri"
 					}
 				]
 			},
@@ -348,6 +719,31 @@ var $defs = {
 				type: "string",
 				minLength: 1,
 				maxLength: 1000
+			},
+			knowsAbout: {
+				type: "array",
+				minItems: 1,
+				maxItems: 100,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 500
+				},
+				uniqueItems: true
+			},
+			credential: {
+				type: "array",
+				minItems: 1,
+				maxItems: 50,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 1000
+				},
+				uniqueItems: true
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
 			}
 		},
 		additionalProperties: false
@@ -374,27 +770,29 @@ var $defs = {
 			softwareVersion: {
 				type: "string",
 				minLength: 1,
-				maxLength: 50
+				maxLength: 100
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
 			}
 		},
 		additionalProperties: false
 	},
-	agentUnknown: {
-		type: "object",
-		required: [
-			"@type"
-		],
-		properties: {
-			"@type": {
-				"const": "UnknownAgent"
+	agentInRole: {
+		oneOf: [
+			{
+				$ref: "#/$defs/agentPerson"
 			},
-			name: {
-				type: "string",
-				minLength: 1,
-				maxLength: 1000
+			{
+				$ref: "#/$defs/agentUnknown"
+			},
+			{
+				$ref: "#/$defs/agentOrganization"
+			},
+			{
+				$ref: "#/$defs/agentSoftware"
 			}
-		},
-		additionalProperties: false
+		]
 	},
 	agentRole: {
 		type: "object",
@@ -418,283 +816,85 @@ var $defs = {
 				$ref: "#/$defs/rfc3339Date"
 			},
 			agent: {
-				oneOf: [
-					{
-						$ref: "#/$defs/agentPerson"
-					},
-					{
-						$ref: "#/$defs/agentOrganization"
-					},
-					{
-						$ref: "#/$defs/agentSoftware"
-					},
-					{
-						$ref: "#/$defs/agentUnknown"
-					}
-				]
+				$ref: "#/$defs/agentInRole"
+			},
+			affiliation: {
+				type: "array",
+				minItems: 1,
+				maxItems: 20,
+				items: {
+					$ref: "#/$defs/agentOrganization"
+				},
+				uniqueItems: true
+			},
+			knowsAbout: {
+				type: "array",
+				minItems: 1,
+				maxItems: 100,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 500
+				},
+				uniqueItems: true
+			},
+			credential: {
+				type: "array",
+				minItems: 1,
+				maxItems: 50,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 1000
+				},
+				uniqueItems: true
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
 			}
 		},
 		additionalProperties: false
+	},
+	agent: {
+		oneOf: [
+			{
+				$ref: "#/$defs/agentPerson"
+			},
+			{
+				$ref: "#/$defs/agentUnknown"
+			},
+			{
+				$ref: "#/$defs/agentOrganization"
+			},
+			{
+				$ref: "#/$defs/agentSoftware"
+			},
+			{
+				$ref: "#/$defs/agentRole"
+			}
+		]
 	},
 	agentArray: {
 		type: "array",
 		minItems: 1,
 		maxItems: 100,
-		uniqueItems: true,
 		items: {
 			$ref: "#/$defs/agent"
-		}
-	},
-	boundedJsonValue: {
-		oneOf: [
-			{
-				type: "string",
-				maxLength: 10000
-			},
-			{
-				type: "number"
-			},
-			{
-				type: "boolean"
-			},
-			{
-				type: "null"
-			},
-			{
-				type: "array",
-				maxItems: 100
-			},
-			{
-				type: "object",
-				maxProperties: 50
-			}
-		]
-	},
-	additionalPropertyValue: {
-		type: "object",
-		required: [
-			"@type",
-			"name",
-			"value"
-		],
-		properties: {
-			"@type": {
-				"const": "PropertyValue"
-			},
-			name: {
-				type: "string",
-				minLength: 1,
-				maxLength: 200
-			},
-			value: {
-				$ref: "#/$defs/boundedJsonValue"
-			},
-			propertyID: {
-				type: "string",
-				minLength: 1,
-				maxLength: 500
-			},
-			valueReference: {
-				type: "string",
-				format: "uri"
-			},
-			unitCode: {
-				type: "string",
-				maxLength: 50
-			},
-			unitText: {
-				type: "string",
-				maxLength: 50
-			}
 		},
-		additionalProperties: false
-	},
-	additionalPropertyArray: {
-		type: "array",
-		maxItems: 200,
-		items: {
-			$ref: "#/$defs/additionalPropertyValue"
-		}
-	},
-	extensionValue: {
-		description: "Value for a colon-prefixed extension property. Kept shallow to prevent payload bombs.",
-		oneOf: [
-			{
-				type: "string",
-				maxLength: 10000
-			},
-			{
-				type: "number"
-			},
-			{
-				type: "boolean"
-			},
-			{
-				type: "null"
-			},
-			{
-				type: "object",
-				maxProperties: 20
-			},
-			{
-				type: "array",
-				maxItems: 100
-			}
-		]
-	},
-	workType: {
-		type: "string",
-		pattern: "^[A-Z][A-Za-z0-9]{1,79}$",
-		description: "Schema.org CreativeWork type token. Recommended values: CreativeWork, Book, Article, ScholarlyArticle, WebPage, Chapter, Periodical, Collection, Dataset, Report. Use CreativeWork when unsure."
-	},
-	workReference: {
-		type: "object",
-		description: "A direct reference to an external bibliographic or cultural work. It is intentionally not limited to books.",
-		required: [
-			"@type"
-		],
-		properties: {
-			"@type": {
-				$ref: "#/$defs/workType"
-			},
-			identifier: {
-				$ref: "#/$defs/identifierSet"
-			},
-			name: {
-				$ref: "#/$defs/plainText"
-			},
-			creatorName: {
-				oneOf: [
-					{
-						type: "string",
-						minLength: 1,
-						maxLength: 2000
-					},
-					{
-						type: "array",
-						minItems: 1,
-						maxItems: 50,
-						uniqueItems: true,
-						items: {
-							type: "string",
-							minLength: 1,
-							maxLength: 1000
-						}
-					}
-				]
-			},
-			publisherName: {
-				type: "string",
-				minLength: 1,
-				maxLength: 1000
-			},
-			datePublished: {
-				$ref: "#/$defs/bibliographicDate"
-			},
-			bookEdition: {
-				type: "string",
-				minLength: 1,
-				maxLength: 500
-			},
-			inLanguage: {
-				$ref: "#/$defs/languageTagArray"
-			},
-			keywords: {
-				$ref: "#/$defs/keywordsArray"
-			},
-			image: {
-				$ref: "#/$defs/uriArray"
-			},
-			additionalProperty: {
-				$ref: "#/$defs/additionalPropertyArray"
-			},
-			bibliographicLevel: {
-				$ref: "#/$defs/bibliographicLevel"
-			},
-			url: {
-				$ref: "#/$defs/webIriSet"
-			},
-			exampleOfWork: {
-				$ref: "#/$defs/workIdentityReference"
-			}
-		},
-		anyOf: [
-			{
-				required: [
-					"identifier"
-				]
-			},
-			{
-				required: [
-					"name"
-				]
-			}
-		],
-		additionalProperties: false
-	},
-	broReference: {
-		type: "object",
-		description: "Reference to another BRO entity. Use this when list items have their own Reaction or ReactionAbstract object.",
-		required: [
-			"@id"
-		],
-		properties: {
-			"@id": {
-				$ref: "#/$defs/entityIri"
-			},
-			"@type": {
-				type: "string",
-				"enum": [
-					"Reaction",
-					"ReactionAbstract"
-				]
-			}
-		},
-		additionalProperties: false
-	},
-	targetReference: {
-		oneOf: [
-			{
-				$ref: "#/$defs/workReference"
-			},
-			{
-				$ref: "#/$defs/broReference"
-			}
-		]
-	},
-	listElement: {
-		oneOf: [
-			{
-				$ref: "#/$defs/workReference"
-			},
-			{
-				$ref: "#/$defs/listEntityReference"
-			}
-		]
-	},
-	reactionType: {
-		type: "string",
-		"enum": [
-			"Response",
-			"Listing",
-			"Unspecified"
-		],
-		"default": "Unspecified",
-		description: "Response = review/comment/critique with non-empty text. Listing = inclusion/recommendation/list-entry action. Unspecified = publisher intentionally declines classification."
+		uniqueItems: true
 	},
 	Reaction: {
 		type: "object",
 		title: "Reaction",
-		description: "A review, comment, critique, recommendation reason, or list-inclusion reaction about one or more works.",
 		required: [
 			"@context",
 			"@type",
 			"@id",
+			"creator",
+			"dateCreated",
 			"reactionType",
 			"about",
-			"text",
-			"creator",
-			"dateCreated"
+			"text"
 		],
 		properties: {
 			"@context": {
@@ -705,6 +905,9 @@ var $defs = {
 			},
 			name: {
 				$ref: "#/$defs/plainText"
+			},
+			description: {
+				$ref: "#/$defs/longText"
 			},
 			byline: {
 				$ref: "#/$defs/bylineString"
@@ -724,8 +927,20 @@ var $defs = {
 			license: {
 				$ref: "#/$defs/httpsIri"
 			},
+			source: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			sourceKey: {
+				$ref: "#/$defs/sourceKey"
+			},
 			inLanguage: {
 				$ref: "#/$defs/languageTagArray"
+			},
+			audience: {
+				$ref: "#/$defs/stringArray"
+			},
+			genre: {
+				$ref: "#/$defs/genreArray"
 			},
 			keywords: {
 				$ref: "#/$defs/keywordsArray"
@@ -746,13 +961,16 @@ var $defs = {
 				$ref: "#/$defs/reactionType"
 			},
 			about: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			isPartOf: {
 				type: "array",
 				minItems: 1,
-				maxItems: 5,
-				uniqueItems: true,
+				maxItems: 20,
 				items: {
-					$ref: "#/$defs/targetReference"
-				}
+					$ref: "#/$defs/reactionListReference"
+				},
+				uniqueItems: true
 			},
 			text: {
 				$ref: "#/$defs/bodyText"
@@ -782,24 +1000,25 @@ var $defs = {
 				then: {
 					properties: {
 						text: {
-							minLength: 1
+							minLength: 1,
+							pattern: "\\S"
 						}
 					}
 				}
 			}
-		]
+		],
+		description: "A primary bibliographic reaction signal observed or issued by a person, organization, software agent, unknown agent, or role. A Reaction may represent listing/inclusion/selection/award candidacy (reactionType=Listing), an independent review/comment/critique (reactionType=Response), or an intentionally unclassified reaction (reactionType=Unspecified)."
 	},
 	ReactionAbstract: {
 		type: "object",
 		title: "ReactionAbstract",
-		description: "A structured summary derived from a Reaction, ReactionList, or external work.",
 		required: [
 			"@context",
 			"@type",
 			"@id",
-			"text",
 			"creator",
 			"dateCreated",
+			"text",
 			"isBasedOn"
 		],
 		properties: {
@@ -811,6 +1030,9 @@ var $defs = {
 			},
 			name: {
 				$ref: "#/$defs/plainText"
+			},
+			description: {
+				$ref: "#/$defs/longText"
 			},
 			byline: {
 				$ref: "#/$defs/bylineString"
@@ -830,8 +1052,20 @@ var $defs = {
 			license: {
 				$ref: "#/$defs/httpsIri"
 			},
+			source: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			sourceKey: {
+				$ref: "#/$defs/sourceKey"
+			},
 			inLanguage: {
 				$ref: "#/$defs/languageTagArray"
+			},
+			audience: {
+				$ref: "#/$defs/stringArray"
+			},
+			genre: {
+				$ref: "#/$defs/genreArray"
 			},
 			keywords: {
 				$ref: "#/$defs/keywordsArray"
@@ -854,7 +1088,8 @@ var $defs = {
 						$ref: "#/$defs/bodyText"
 					},
 					{
-						minLength: 1
+						minLength: 1,
+						pattern: "\\S"
 					}
 				]
 			},
@@ -864,11 +1099,11 @@ var $defs = {
 			isBasedOn: {
 				type: "array",
 				minItems: 1,
-				maxItems: 10,
-				uniqueItems: true,
+				maxItems: 20,
 				items: {
-					$ref: "#/$defs/basedOnReference"
-				}
+					$ref: "#/$defs/basisReference"
+				},
+				uniqueItems: true
 			}
 		},
 		patternProperties: {
@@ -876,19 +1111,19 @@ var $defs = {
 				$ref: "#/$defs/extensionValue"
 			}
 		},
-		additionalProperties: false
+		additionalProperties: false,
+		description: "Optional derived summary artifact. A ReactionAbstract is not a primary observed reaction from a source. Use it only when a summary derived from a Reaction, ReactionList, another ReactionAbstract, or referenced CreativeWork must be exchanged as an independent object with its own creator, creation date, language, license, and provenance."
 	},
 	ReactionList: {
 		type: "object",
 		title: "ReactionList",
-		description: "A persistent recommendation, review, reading, or curation list. The list itself is meaningful metadata.",
 		required: [
 			"@context",
 			"@type",
 			"@id",
 			"creator",
-			"itemListElement",
-			"dateCreated"
+			"dateCreated",
+			"itemListElement"
 		],
 		properties: {
 			"@context": {
@@ -899,6 +1134,9 @@ var $defs = {
 			},
 			name: {
 				$ref: "#/$defs/plainText"
+			},
+			description: {
+				$ref: "#/$defs/longText"
 			},
 			byline: {
 				$ref: "#/$defs/bylineString"
@@ -918,8 +1156,20 @@ var $defs = {
 			license: {
 				$ref: "#/$defs/httpsIri"
 			},
+			source: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			sourceKey: {
+				$ref: "#/$defs/sourceKey"
+			},
 			inLanguage: {
 				$ref: "#/$defs/languageTagArray"
+			},
+			audience: {
+				$ref: "#/$defs/stringArray"
+			},
+			genre: {
+				$ref: "#/$defs/genreArray"
 			},
 			keywords: {
 				$ref: "#/$defs/keywordsArray"
@@ -940,9 +1190,249 @@ var $defs = {
 				type: "array",
 				minItems: 0,
 				maxItems: 10000,
+				uniqueItems: true,
 				items: {
-					$ref: "#/$defs/listElement"
+					$ref: "#/$defs/reactionOrAbstractReference"
 				}
+			},
+			selectionCriteria: {
+				type: "array",
+				minItems: 1,
+				maxItems: 100,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 2000
+				},
+				uniqueItems: true
+			}
+		},
+		patternProperties: {
+			"^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+				$ref: "#/$defs/extensionValue"
+			}
+		},
+		additionalProperties: false,
+		description: "A curation container that groups Reaction and optional ReactionAbstract instances by reference. In canonical BRO, even simple list membership is represented as a Reaction with reactionType=Listing; ReactionList.itemListElement references those Reaction objects rather than raw Book/CreativeWork items."
+	},
+	ReactionNode: {
+		type: "object",
+		title: "Reaction",
+		required: [
+			"@type",
+			"@id",
+			"creator",
+			"dateCreated",
+			"reactionType",
+			"about",
+			"text"
+		],
+		properties: {
+			"@context": {
+				$ref: "#/$defs/contextRef"
+			},
+			"@id": {
+				$ref: "#/$defs/entityIri"
+			},
+			name: {
+				$ref: "#/$defs/plainText"
+			},
+			description: {
+				$ref: "#/$defs/longText"
+			},
+			byline: {
+				$ref: "#/$defs/bylineString"
+			},
+			creator: {
+				$ref: "#/$defs/agentArray"
+			},
+			dateCreated: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			dateModified: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			datePublished: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			license: {
+				$ref: "#/$defs/httpsIri"
+			},
+			source: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			sourceKey: {
+				$ref: "#/$defs/sourceKey"
+			},
+			inLanguage: {
+				$ref: "#/$defs/languageTagArray"
+			},
+			audience: {
+				$ref: "#/$defs/stringArray"
+			},
+			genre: {
+				$ref: "#/$defs/genreArray"
+			},
+			keywords: {
+				$ref: "#/$defs/keywordsArray"
+			},
+			image: {
+				$ref: "#/$defs/uriArray"
+			},
+			citation: {
+				$ref: "#/$defs/uriArray"
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
+			},
+			"@type": {
+				"const": "Reaction"
+			},
+			reactionType: {
+				$ref: "#/$defs/reactionType"
+			},
+			about: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			isPartOf: {
+				type: "array",
+				minItems: 1,
+				maxItems: 20,
+				items: {
+					$ref: "#/$defs/reactionListReference"
+				},
+				uniqueItems: true
+			},
+			text: {
+				$ref: "#/$defs/bodyText"
+			},
+			textFormat: {
+				$ref: "#/$defs/textFormat"
+			}
+		},
+		patternProperties: {
+			"^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+				$ref: "#/$defs/extensionValue"
+			}
+		},
+		additionalProperties: false,
+		allOf: [
+			{
+				"if": {
+					properties: {
+						reactionType: {
+							"const": "Response"
+						}
+					},
+					required: [
+						"reactionType"
+					]
+				},
+				then: {
+					properties: {
+						text: {
+							minLength: 1,
+							pattern: "\\S"
+						}
+					}
+				}
+			}
+		]
+	},
+	ReactionAbstractNode: {
+		type: "object",
+		title: "ReactionAbstract",
+		required: [
+			"@type",
+			"@id",
+			"creator",
+			"dateCreated",
+			"text",
+			"isBasedOn"
+		],
+		properties: {
+			"@context": {
+				$ref: "#/$defs/contextRef"
+			},
+			"@id": {
+				$ref: "#/$defs/entityIri"
+			},
+			name: {
+				$ref: "#/$defs/plainText"
+			},
+			description: {
+				$ref: "#/$defs/longText"
+			},
+			byline: {
+				$ref: "#/$defs/bylineString"
+			},
+			creator: {
+				$ref: "#/$defs/agentArray"
+			},
+			dateCreated: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			dateModified: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			datePublished: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			license: {
+				$ref: "#/$defs/httpsIri"
+			},
+			source: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			sourceKey: {
+				$ref: "#/$defs/sourceKey"
+			},
+			inLanguage: {
+				$ref: "#/$defs/languageTagArray"
+			},
+			audience: {
+				$ref: "#/$defs/stringArray"
+			},
+			genre: {
+				$ref: "#/$defs/genreArray"
+			},
+			keywords: {
+				$ref: "#/$defs/keywordsArray"
+			},
+			image: {
+				$ref: "#/$defs/uriArray"
+			},
+			citation: {
+				$ref: "#/$defs/uriArray"
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
+			},
+			"@type": {
+				"const": "ReactionAbstract"
+			},
+			text: {
+				allOf: [
+					{
+						$ref: "#/$defs/bodyText"
+					},
+					{
+						minLength: 1,
+						pattern: "\\S"
+					}
+				]
+			},
+			textFormat: {
+				$ref: "#/$defs/textFormat"
+			},
+			isBasedOn: {
+				type: "array",
+				minItems: 1,
+				maxItems: 20,
+				items: {
+					$ref: "#/$defs/basisReference"
+				},
+				uniqueItems: true
 			}
 		},
 		patternProperties: {
@@ -952,143 +1442,143 @@ var $defs = {
 		},
 		additionalProperties: false
 	},
-	bibliographicLevel: {
-		type: "string",
-		"enum": [
-			"Work",
-			"Edition",
-			"Item",
-			"Unspecified"
-		],
-		description: "Approximate bibliographic level of this reference. Work: abstract work level; Edition: manifestation/edition/publication level; Item: holding/copy/item level; Unspecified: source does not allow a decision."
-	},
-	listEntityReference: {
+	ReactionListNode: {
 		type: "object",
-		description: "Reference to a BRO Reaction or ReactionAbstract used as a list element. ReactionList nesting is intentionally not used for list elements in v1.0.",
+		title: "ReactionList",
 		required: [
-			"@id"
+			"@type",
+			"@id",
+			"creator",
+			"dateCreated",
+			"itemListElement"
 		],
 		properties: {
+			"@context": {
+				$ref: "#/$defs/contextRef"
+			},
 			"@id": {
 				$ref: "#/$defs/entityIri"
-			},
-			"@type": {
-				type: "string",
-				"enum": [
-					"Reaction",
-					"ReactionAbstract"
-				]
-			}
-		},
-		additionalProperties: false
-	},
-	basedOnEntityReference: {
-		type: "object",
-		description: "Reference to another BRO entity used as a source for a ReactionAbstract.",
-		required: [
-			"@id"
-		],
-		properties: {
-			"@id": {
-				$ref: "#/$defs/entityIri"
-			},
-			"@type": {
-				type: "string",
-				"enum": [
-					"Reaction",
-					"ReactionAbstract",
-					"ReactionList"
-				]
-			}
-		},
-		additionalProperties: false
-	},
-	basedOnReference: {
-		oneOf: [
-			{
-				$ref: "#/$defs/workReference"
-			},
-			{
-				$ref: "#/$defs/basedOnEntityReference"
-			}
-		]
-	},
-	workIdentityReference: {
-		type: "object",
-		description: "Optional abstract-work-level reference for an edition, translation, manifestation, or item. Advanced use; general users may omit it.",
-		required: [
-			"@type"
-		],
-		properties: {
-			"@type": {
-				"const": "CreativeWork"
-			},
-			identifier: {
-				$ref: "#/$defs/identifierSet"
 			},
 			name: {
 				$ref: "#/$defs/plainText"
 			},
-			creatorName: {
-				oneOf: [
-					{
-						type: "string",
-						minLength: 1,
-						maxLength: 2000
-					},
-					{
-						type: "array",
-						minItems: 1,
-						maxItems: 50,
-						uniqueItems: true,
-						items: {
-							type: "string",
-							minLength: 1,
-							maxLength: 1000
-						}
-					}
-				]
-			}
-		},
-		anyOf: [
-			{
-				required: [
-					"identifier"
-				]
+			description: {
+				$ref: "#/$defs/longText"
 			},
-			{
-				required: [
-					"name"
-				]
-			}
-		],
-		additionalProperties: false
-	},
-	webIriArray: {
-		type: "array",
-		minItems: 1,
-		maxItems: 200,
-		uniqueItems: true,
-		items: {
-			$ref: "#/$defs/webIri"
-		}
-	},
-	webIriSet: {
-		description: "One or more HTTP/HTTPS URLs.",
-		oneOf: [
-			{
-				$ref: "#/$defs/webIri"
+			byline: {
+				$ref: "#/$defs/bylineString"
 			},
-			{
+			creator: {
+				$ref: "#/$defs/agentArray"
+			},
+			dateCreated: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			dateModified: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			datePublished: {
+				$ref: "#/$defs/rfc3339DateTime"
+			},
+			license: {
+				$ref: "#/$defs/httpsIri"
+			},
+			source: {
+				$ref: "#/$defs/workReferenceArray"
+			},
+			sourceKey: {
+				$ref: "#/$defs/sourceKey"
+			},
+			inLanguage: {
+				$ref: "#/$defs/languageTagArray"
+			},
+			audience: {
+				$ref: "#/$defs/stringArray"
+			},
+			genre: {
+				$ref: "#/$defs/genreArray"
+			},
+			keywords: {
+				$ref: "#/$defs/keywordsArray"
+			},
+			image: {
+				$ref: "#/$defs/uriArray"
+			},
+			citation: {
+				$ref: "#/$defs/uriArray"
+			},
+			additionalProperty: {
+				$ref: "#/$defs/additionalPropertyArray"
+			},
+			"@type": {
+				"const": "ReactionList"
+			},
+			itemListElement: {
 				type: "array",
-				minItems: 1,
-				maxItems: 200,
+				minItems: 0,
+				maxItems: 10000,
 				uniqueItems: true,
 				items: {
-					$ref: "#/$defs/webIri"
+					$ref: "#/$defs/reactionOrAbstractReference"
 				}
+			},
+			selectionCriteria: {
+				type: "array",
+				minItems: 1,
+				maxItems: 100,
+				items: {
+					type: "string",
+					minLength: 1,
+					maxLength: 2000
+				},
+				uniqueItems: true
+			}
+		},
+		patternProperties: {
+			"^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9_-]*$": {
+				$ref: "#/$defs/extensionValue"
+			}
+		},
+		additionalProperties: false
+	},
+	graphNode: {
+		oneOf: [
+			{
+				$ref: "#/$defs/ReactionNode"
+			},
+			{
+				$ref: "#/$defs/ReactionAbstractNode"
+			},
+			{
+				$ref: "#/$defs/ReactionListNode"
 			}
 		]
+	},
+	BROGraph: {
+		type: "object",
+		title: "BROGraph",
+		description: "JSON-LD graph document containing a connected exchange set, such as a ReactionList and its Listing/Response Reactions plus optional derived ReactionAbstract summaries.",
+		required: [
+			"@context",
+			"@graph"
+		],
+		properties: {
+			"@context": {
+				$ref: "#/$defs/contextRef"
+			},
+			"@id": {
+				$ref: "#/$defs/entityIri"
+			},
+			"@graph": {
+				type: "array",
+				minItems: 1,
+				maxItems: 20000,
+				items: {
+					$ref: "#/$defs/graphNode"
+				}
+			}
+		},
+		additionalProperties: false
 	}
 };
 var broV1Schema = {
@@ -1114,30 +1604,41 @@ declare const broV1Context: {
         readonly dc: "http://purl.org/dc/elements/1.1/";
         readonly dcterms: "http://purl.org/dc/terms/";
         readonly bibo: "http://purl.org/ontology/bibo/";
+        readonly bf: "http://id.loc.gov/ontologies/bibframe/";
         readonly nlon: "http://lod.nl.go.kr/ontology/";
         readonly Reaction: "bro:Reaction";
         readonly ReactionAbstract: "bro:ReactionAbstract";
         readonly ReactionList: "bro:ReactionList";
+        readonly UnknownAgent: "bro:UnknownAgent";
         readonly Person: "schema:Person";
         readonly Organization: "schema:Organization";
+        readonly Library: "schema:Library";
+        readonly GovernmentOrganization: "schema:GovernmentOrganization";
+        readonly EducationalOrganization: "schema:EducationalOrganization";
+        readonly School: "schema:School";
+        readonly Corporation: "schema:Corporation";
         readonly SoftwareApplication: "schema:SoftwareApplication";
-        readonly UnknownAgent: "bro:UnknownAgent";
         readonly Role: "schema:Role";
         readonly PropertyValue: "schema:PropertyValue";
+        readonly CreativeWork: "schema:CreativeWork";
         readonly Book: "schema:Book";
         readonly Article: "schema:Article";
         readonly ScholarlyArticle: "schema:ScholarlyArticle";
         readonly WebPage: "schema:WebPage";
         readonly Dataset: "schema:Dataset";
-        readonly CreativeWork: "schema:CreativeWork";
+        readonly Chapter: "schema:Chapter";
+        readonly Report: "schema:Report";
+        readonly Review: "schema:Review";
+        readonly Recommendation: "schema:Recommendation";
+        readonly Response: "bro:Response";
+        readonly Listing: "bro:Listing";
+        readonly Unspecified: "bro:Unspecified";
         readonly reactionType: {
             readonly "@id": "bro:reactionType";
             readonly "@type": "@vocab";
         };
-        readonly Response: "bro:Response";
-        readonly Listing: "bro:Listing";
-        readonly Unspecified: "bro:Unspecified";
         readonly name: "schema:name";
+        readonly description: "schema:description";
         readonly byline: "bro:byline";
         readonly text: "schema:text";
         readonly textFormat: "schema:encodingFormat";
@@ -1145,17 +1646,28 @@ declare const broV1Context: {
             readonly "@id": "schema:creator";
             readonly "@container": "@set";
         };
-        readonly creatorName: "schema:creator";
-        readonly publisherName: "schema:publisher";
-        readonly bookEdition: "schema:bookEdition";
-        readonly roleName: "schema:roleName";
         readonly agent: "schema:agent";
-        readonly identifier: {
-            readonly "@id": "schema:identifier";
+        readonly roleName: "schema:roleName";
+        readonly jobTitle: "schema:jobTitle";
+        readonly affiliation: {
+            readonly "@id": "schema:affiliation";
             readonly "@container": "@set";
         };
+        readonly knowsAbout: {
+            readonly "@id": "schema:knowsAbout";
+            readonly "@container": "@set";
+        };
+        readonly credential: {
+            readonly "@id": "bro:credential";
+            readonly "@container": "@set";
+        };
+        readonly softwareVersion: "schema:softwareVersion";
         readonly about: {
             readonly "@id": "schema:about";
+            readonly "@container": "@set";
+        };
+        readonly isPartOf: {
+            readonly "@id": "schema:isPartOf";
             readonly "@container": "@set";
         };
         readonly isBasedOn: {
@@ -1166,9 +1678,49 @@ declare const broV1Context: {
             readonly "@id": "schema:itemListElement";
             readonly "@container": "@list";
         };
-        readonly keywords: {
-            readonly "@id": "schema:keywords";
+        readonly selectionCriteria: {
+            readonly "@id": "bro:selectionCriteria";
             readonly "@container": "@set";
+        };
+        readonly source: {
+            readonly "@id": "prov:wasDerivedFrom";
+            readonly "@container": "@set";
+        };
+        readonly sourceKey: "bro:sourceKey";
+        readonly identifier: {
+            readonly "@id": "schema:identifier";
+            readonly "@container": "@set";
+        };
+        readonly creatorName: "bro:creatorName";
+        readonly publisherName: "bro:publisherName";
+        readonly bookEdition: "schema:bookEdition";
+        readonly datePublished: {
+            readonly "@id": "schema:datePublished";
+            readonly "@type": "xsd:dateTime";
+        };
+        readonly dateCreated: {
+            readonly "@id": "schema:dateCreated";
+            readonly "@type": "xsd:dateTime";
+        };
+        readonly dateModified: {
+            readonly "@id": "schema:dateModified";
+            readonly "@type": "xsd:dateTime";
+        };
+        readonly startDate: {
+            readonly "@id": "schema:startDate";
+            readonly "@type": "xsd:date";
+        };
+        readonly endDate: {
+            readonly "@id": "schema:endDate";
+            readonly "@type": "xsd:date";
+        };
+        readonly license: {
+            readonly "@id": "schema:license";
+            readonly "@type": "@id";
+        };
+        readonly url: {
+            readonly "@id": "schema:url";
+            readonly "@type": "@id";
         };
         readonly image: {
             readonly "@id": "schema:image";
@@ -1184,64 +1736,31 @@ declare const broV1Context: {
             readonly "@id": "schema:inLanguage";
             readonly "@container": "@set";
         };
-        readonly license: {
-            readonly "@id": "schema:license";
-            readonly "@type": "@id";
+        readonly audience: {
+            readonly "@id": "schema:audience";
+            readonly "@container": "@set";
         };
-        readonly dateCreated: {
-            readonly "@id": "schema:dateCreated";
-            readonly "@type": "xsd:dateTime";
+        readonly genre: {
+            readonly "@id": "schema:genre";
+            readonly "@container": "@set";
         };
-        readonly dateModified: {
-            readonly "@id": "schema:dateModified";
-            readonly "@type": "xsd:dateTime";
+        readonly keywords: {
+            readonly "@id": "schema:keywords";
+            readonly "@container": "@set";
         };
-        readonly datePublished: "schema:datePublished";
-        readonly startDate: {
-            readonly "@id": "schema:startDate";
-            readonly "@type": "xsd:date";
-        };
-        readonly endDate: {
-            readonly "@id": "schema:endDate";
-            readonly "@type": "xsd:date";
-        };
-        readonly softwareVersion: "schema:softwareVersion";
         readonly additionalProperty: {
             readonly "@id": "schema:additionalProperty";
             readonly "@container": "@set";
         };
         readonly value: "schema:value";
-        readonly valueReference: {
-            readonly "@id": "schema:valueReference";
-            readonly "@type": "@id";
-        };
+        readonly valueReference: "schema:valueReference";
         readonly propertyID: "schema:propertyID";
         readonly unitCode: "schema:unitCode";
         readonly unitText: "schema:unitText";
-        readonly bibliographicLevel: {
-            readonly "@id": "bro:bibliographicLevel";
-            readonly "@type": "@vocab";
-        };
-        readonly Work: "bro:WorkLevel";
-        readonly Edition: "bro:EditionLevel";
-        readonly Item: "bro:ItemLevel";
-        readonly "@vocab": "https://schema.org/";
-        readonly Chapter: "schema:Chapter";
-        readonly Periodical: "schema:Periodical";
-        readonly Collection: "schema:Collection";
-        readonly Report: "schema:Report";
-        readonly url: {
-            readonly "@id": "schema:url";
-            readonly "@type": "@id";
-            readonly "@container": "@set";
-        };
-        readonly exampleOfWork: {
-            readonly "@id": "schema:exampleOfWork";
-        };
     };
 };
 
-declare const broV1VocabTurtle = "@prefix bro:    <https://schema.slat.or.kr/bro/v1.0/vocab#> .\n@prefix schema: <https://schema.org/> .\n@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .\n\nbro:Reaction         a rdfs:Class ; rdfs:subClassOf schema:CreativeWork .\nbro:ReactionAbstract a rdfs:Class ; rdfs:subClassOf schema:CreativeWork .\nbro:ReactionList     a rdfs:Class ; rdfs:subClassOf schema:ItemList .\nbro:UnknownAgent     a rdfs:Class ; rdfs:subClassOf schema:Agent ;\n                     rdfs:comment \"Explicit declaration that the publisher cannot identify the agent. Each instance is a fresh blank node by design; no global singleton.\" .\n\nbro:reactionType a rdf:Property ; rdfs:subPropertyOf schema:additionalType .\nbro:Response     a bro:ReactionType .\nbro:Listing      a bro:ReactionType .\nbro:Unspecified  a bro:ReactionType .\n\nbro:byline a rdf:Property ; rdfs:subPropertyOf schema:creditText .\nbro:bibliographicLevel a rdf:Property ; rdfs:subPropertyOf schema:additionalType .\nbro:WorkLevel          a bro:BibliographicLevel .\nbro:EditionLevel       a bro:BibliographicLevel .\nbro:ItemLevel          a bro:BibliographicLevel .\n";
+declare const broV1VocabTurtle = "@prefix bro:    <https://schema.slat.or.kr/bro/v1.0/vocab#> .\n@prefix schema: <https://schema.org/> .\n@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix prov:   <http://www.w3.org/ns/prov#> .\n\nbro:Reaction a rdfs:Class ;\n  rdfs:subClassOf schema:CreativeWork ;\n  rdfs:comment \"A bibliographic reaction signal: listing, recommendation, selection, review, comment, or unspecified response concerning one or more external works.\"@en .\n\nbro:ReactionAbstract a rdfs:Class ;\n  rdfs:subClassOf schema:CreativeWork ;\n  rdfs:comment \"An optional derived summary artifact, not a primary observed reaction. Use when a summary derived from a Reaction, ReactionList, another ReactionAbstract, or external bibliographic resource must be exchanged with its own provenance.\"@en .\n\nbro:ReactionList a rdfs:Class ;\n  rdfs:subClassOf schema:ItemList ;\n  rdfs:comment \"A curation container that aggregates Reaction and/or ReactionAbstract entities by reference.\"@en .\n\nbro:UnknownAgent a rdfs:Class ;\n  rdfs:subClassOf schema:Agent ;\n  rdfs:comment \"Explicit declaration that the publisher cannot identify the responsible agent. Each instance is a fresh blank node by design.\"@en .\n\nbro:ReactionType a rdfs:Class .\n\nbro:reactionType a rdf:Property ;\n  rdfs:subPropertyOf schema:additionalType ;\n  rdfs:comment \"Primary information function of a Reaction: Response, Listing, or Unspecified.\"@en .\n\nbro:Response a bro:ReactionType ;\n  rdfs:comment \"A Reaction whose primary function is an independent review, comment, critique, assessment, or response body.\"@en .\n\nbro:Listing a bro:ReactionType ;\n  rdfs:comment \"A Reaction whose primary function is to record that a resource was listed, selected, recommended, awarded, shortlisted, or otherwise included in a curation context. Text may be empty or contain a rationale.\"@en .\n\nbro:Unspecified a bro:ReactionType ;\n  rdfs:comment \"A Reaction whose source does not allow the publisher to classify the primary function safely.\"@en .\n\nbro:byline a rdf:Property ;\n  rdfs:subPropertyOf schema:creditText ;\n  rdfs:comment \"Free-form attribution string preserved from the source.\"@en .\n\nbro:sourceKey a rdf:Property ;\n  rdfs:subPropertyOf schema:identifier ;\n  rdfs:comment \"Source-local key for idempotent re-ingestion. Not a global bibliographic identifier.\"@en .\n\nbro:selectionCriteria a rdf:Property ;\n  rdfs:subPropertyOf schema:description ;\n  rdfs:comment \"Human-readable criterion used by a list or selection program.\"@en .\n\nbro:credential a rdf:Property ;\n  rdfs:comment \"Plain-text credential or authority clue asserted by the publisher or preserved from source. It is evidence, not proof.\"@en .\n\nbro:creatorName a rdf:Property ;\n  rdfs:subPropertyOf schema:creator ;\n  rdfs:comment \"Human-readable creator or author display string for lightweight or unresolved bibliographic references.\"@en .\n\nbro:publisherName a rdf:Property ;\n  rdfs:subPropertyOf schema:publisher ;\n  rdfs:comment \"Human-readable publisher display string for lightweight bibliographic references.\"@en .\n";
 
 declare function normalizeUrnScheme(value: string): string;
 declare function normalizePayload<T>(payload: T): T;
@@ -1251,6 +1770,7 @@ declare const BRO_CONTEXT_IRI$1: "https://schema.slat.or.kr/bro/v1.0/context.jso
 type BroContext = typeof BRO_CONTEXT_IRI$1 | readonly [typeof BRO_CONTEXT_IRI$1, ...Array<string | Record<string, unknown>>];
 type EntityIri = `urn:uuid:${string}` | `https://${string}`;
 type WebIri = `http://${string}` | `https://${string}`;
+type HttpsIri = `https://${string}`;
 type AgentIri = EntityIri | `mailto:${string}`;
 type Rfc3339DateTime = string;
 type Rfc3339Date = string;
@@ -1260,17 +1780,7 @@ type TextFormat = string;
 type BoundedJsonValue = string | number | boolean | null | readonly unknown[] | Record<string, unknown>;
 type ReactionType = "Response" | "Listing" | "Unspecified";
 type BroEntityType = "Reaction" | "ReactionAbstract" | "ReactionList";
-type BibliographicLevel = "Work" | "Edition" | "Item" | "Unspecified";
-type WorkType = "CreativeWork" | "Book" | "Article" | "ScholarlyArticle" | "WebPage" | "Chapter" | "Periodical" | "Collection" | "Dataset" | "Report" | (string & {});
-interface IdentifierPropertyValue {
-    readonly "@type": "PropertyValue";
-    name?: string;
-    propertyID?: string;
-    value: string | number;
-    valueReference?: string;
-}
-type IdentifierValue = string | IdentifierPropertyValue;
-type IdentifierSet = IdentifierValue | readonly [IdentifierValue, ...IdentifierValue[]];
+type WorkType = "CreativeWork" | "Book" | "Article" | "ScholarlyArticle" | "WebPage" | "Report" | "Dataset" | "Chapter" | "Periodical" | "PublicationIssue" | "PublicationVolume" | (string & {});
 interface PropertyValue {
     readonly "@type": "PropertyValue";
     name: string;
@@ -1280,63 +1790,63 @@ interface PropertyValue {
     unitCode?: string;
     unitText?: string;
 }
+type IdentifierPropertyValue = PropertyValue;
+type IdentifierValue = string | PropertyValue;
+type IdentifierSet = IdentifierValue | readonly [IdentifierValue, ...IdentifierValue[]];
 type AdditionalPropertyArray = PropertyValue[];
-interface WorkIdentityReference {
-    readonly "@type": "CreativeWork";
-    identifier?: IdentifierSet;
-    name?: string;
-    creatorName?: string | readonly [string, ...string[]];
-}
 interface WorkReference {
     readonly "@type": WorkType;
+    readonly "@id"?: string;
     identifier?: IdentifierSet;
     name?: string;
-    creatorName?: string | readonly [string, ...string[]];
+    creatorName?: string;
     publisherName?: string;
-    datePublished?: BibliographicDate;
     bookEdition?: string;
+    datePublished?: BibliographicDate;
+    url?: string;
     inLanguage?: readonly [LanguageTag, ...LanguageTag[]];
     keywords?: string[];
-    image?: string[];
     additionalProperty?: AdditionalPropertyArray;
-    bibliographicLevel?: BibliographicLevel;
-    url?: WebIri | readonly [WebIri, ...WebIri[]];
-    exampleOfWork?: WorkIdentityReference;
+    [extensionKey: `${Lowercase<string>}:${string}`]: unknown;
 }
-interface BroReference {
+interface BroEntityReference<T extends BroEntityType = BroEntityType> {
     readonly "@id": EntityIri;
-    readonly "@type"?: "Reaction" | "ReactionAbstract";
+    readonly "@type": T;
 }
-interface ListEntityReference {
-    readonly "@id": EntityIri;
-    readonly "@type"?: "Reaction" | "ReactionAbstract";
+type ReactionOrAbstractReference = BroEntityReference<"Reaction" | "ReactionAbstract">;
+type ReactionListReference = BroEntityReference<"ReactionList">;
+type BasedOnReference = WorkReference | BroEntityReference;
+type TargetReference = WorkReference;
+type ListElement = ReactionOrAbstractReference;
+type OrganizationType = "Organization" | "Library" | "GovernmentOrganization" | "EducationalOrganization" | "School" | "Corporation";
+interface AgentOrganization {
+    readonly "@type": OrganizationType;
+    readonly "@id"?: EntityIri;
+    name: string;
+    knowsAbout?: string[];
+    credential?: string[];
+    additionalProperty?: AdditionalPropertyArray;
 }
-interface BasedOnEntityReference {
-    readonly "@id": EntityIri;
-    readonly "@type"?: BroEntityType;
-}
-type TargetReference = WorkReference | BroReference;
-type ListElement = WorkReference | ListEntityReference;
-type BasedOnReference = WorkReference | BasedOnEntityReference;
 interface AgentPerson {
     readonly "@type": "Person";
     readonly "@id"?: AgentIri;
     name: string;
+    jobTitle?: string;
+    affiliation?: AgentOrganization[];
+    knowsAbout?: string[];
+    credential?: string[];
+    additionalProperty?: AdditionalPropertyArray;
 }
 interface AgentUnknown {
     readonly "@type": "UnknownAgent";
     name?: string;
 }
-interface AgentOrganization {
-    readonly "@type": "Organization";
-    readonly "@id"?: `urn:uuid:${string}` | WebIri;
-    name: string;
-}
 interface AgentSoftware {
     readonly "@type": "SoftwareApplication";
-    readonly "@id": `https://${string}`;
+    readonly "@id": HttpsIri;
     name: string;
     softwareVersion?: string;
+    additionalProperty?: AdditionalPropertyArray;
 }
 type AgentInRole = AgentPerson | AgentUnknown | AgentOrganization | AgentSoftware;
 interface AgentRole {
@@ -1345,6 +1855,10 @@ interface AgentRole {
     startDate?: Rfc3339Date;
     endDate?: Rfc3339Date;
     agent: AgentInRole;
+    affiliation?: AgentOrganization[];
+    knowsAbout?: string[];
+    credential?: string[];
+    additionalProperty?: AdditionalPropertyArray;
 }
 type Agent = AgentInRole | AgentRole;
 type CreatorRoot = Agent;
@@ -1352,13 +1866,18 @@ interface BroBase {
     readonly "@context": BroContext;
     readonly "@id": EntityIri;
     name?: string;
+    description?: string;
     byline?: string;
     creator: [Agent, ...Agent[]];
     dateCreated: Rfc3339DateTime;
     dateModified?: Rfc3339DateTime;
     datePublished?: Rfc3339DateTime;
-    license?: `https://${string}`;
+    license?: HttpsIri;
+    source?: WorkReference[];
+    sourceKey?: string;
     inLanguage?: [LanguageTag, ...LanguageTag[]];
+    audience?: string[];
+    genre?: string[];
     keywords?: string[];
     image?: string[];
     citation?: string[];
@@ -1368,7 +1887,8 @@ interface BroBase {
 interface Reaction extends BroBase {
     readonly "@type": "Reaction";
     reactionType: ReactionType;
-    about: [TargetReference, ...TargetReference[]];
+    about: [WorkReference, ...WorkReference[]];
+    isPartOf?: [ReactionListReference, ...ReactionListReference[]];
     text: string;
     textFormat?: TextFormat;
 }
@@ -1381,18 +1901,32 @@ interface ReactionAbstract extends BroBase {
 interface ReactionList extends BroBase {
     readonly "@type": "ReactionList";
     itemListElement: ListElement[];
+    selectionCriteria?: string[];
 }
-type BibliographicReactionObjectBROV10 = Reaction | ReactionAbstract | ReactionList;
-type BroPayload = BibliographicReactionObjectBROV10;
+type BroNode = Reaction | ReactionAbstract | ReactionList;
+interface BROGraph {
+    readonly "@context": BroContext;
+    readonly "@id"?: EntityIri;
+    readonly "@graph": [BroNode, ...BroNode[]];
+}
+type BroDocument = BroNode | BROGraph;
+type BibliographicReactionObjectBROV10 = BroDocument;
+type BibliographicReactionObjectBRO = BibliographicReactionObjectBROV10;
+type BroPayload = BroDocument;
 type BroReaction = Reaction;
 type BroReactionAbstract = ReactionAbstract;
 type BroReactionList = ReactionList;
 /**
  * Compatibility aliases for earlier public API names.
- * New code should use Reaction, ReactionAbstract, ReactionList, and WorkReference.
+ * New code should use Reaction, ReactionAbstract, ReactionList, BroNode, and BROGraph.
  */
 type ExternalReference = WorkReference;
-type ElementReference = ListEntityReference;
+type ElementReference = ReactionOrAbstractReference;
+type BroReference = BroEntityReference<"Reaction" | "ReactionAbstract">;
+type ListEntityReference = ReactionOrAbstractReference;
+type BasedOnEntityReference = BroEntityReference;
+type WorkIdentityReference = WorkReference;
+type BibliographicLevel = never;
 type AgentGovernment = AgentOrganization;
 type AgentCorporation = AgentOrganization;
 type BroArticle = Reaction;
@@ -1416,7 +1950,7 @@ declare const BRO_SCHEMA_IRI: "https://schema.slat.or.kr/bro/v1.0/schema.json";
 declare const BRO_VOCAB_IRI: "https://schema.slat.or.kr/bro/v1.0/vocab#";
 declare const BRO_ENTITY_TYPES: readonly ["Reaction", "ReactionAbstract", "ReactionList"];
 declare const REACTION_TYPES: readonly ["Response", "Listing", "Unspecified"];
-declare const AGENT_TYPES: readonly ["Person", "UnknownAgent", "Organization", "SoftwareApplication", "Role"];
+declare const AGENT_TYPES: readonly ["Person", "UnknownAgent", "Organization", "Library", "GovernmentOrganization", "EducationalOrganization", "School", "Corporation", "SoftwareApplication", "Role"];
 type AgentType = (typeof AGENT_TYPES)[number];
 type CreatorType = AgentType;
 type Creator = Agent;
@@ -1428,6 +1962,10 @@ type CreatorCorporation = AgentCorporation;
 type CreatorOrganization = AgentOrganization;
 type CreatorSoftware = AgentSoftware;
 type CreatorRole = AgentRole;
+declare function isBroNode(value: unknown): value is BroNode;
+declare function isBroGraph(value: unknown): value is Extract<BroDocument, {
+    "@graph": unknown;
+}>;
 declare function isBroPayload(value: unknown): value is BroPayload;
 declare function isReaction(value: unknown): value is BroReaction;
 declare function isReactionAbstract(value: unknown): value is BroReactionAbstract;
@@ -1490,7 +2028,7 @@ interface BibframeWork {
     "bf:note"?: BibframeNote;
     [key: string]: unknown;
 }
-declare function convertBroToBibframe(payload: BibliographicReactionObjectBROV10): BibframeWork;
+declare function convertBroToBibframe(payload: BibliographicReactionObjectBROV10): BibframeWork | BibframeWork[];
 
 declare function renderBroToMarkdown(payload: BibliographicReactionObjectBROV10): string;
 
@@ -1514,4 +2052,4 @@ interface KomarcRecord {
 }
 declare function convertBroToKomarc(payload: BibliographicReactionObjectBROV10): KomarcRecord | KomarcRecord[];
 
-export { AGENT_TYPES, type AdditionalPropertyArray, type Agent, type AgentCorporation, type AgentGovernment, type AgentInRole, type AgentIri, type AgentOrganization, type AgentPerson, type AgentRole, type AgentSoftware, type AgentType, type AgentUnknown, BRO_CONTEXT_IRI, BRO_ENTITY_TYPES, BRO_SCHEMA_IRI, BRO_VOCAB_IRI, type BasedOnEntityReference, type BasedOnReference, type BibframeContribution, type BibframeIdentifier, type BibframeInstance, type BibframeNote, type BibframeWork, type BibliographicDate, type BibliographicLevel, type BibliographicReactionObjectBROV10, type BoundedJsonValue, type BroAbstract, type BroArticle, type BroBase, type BroContext, type BroEntityType, type BroItemList, type BroPayload, type BroReaction, type BroReactionAbstract, type BroReactionList, type BroReference, broV1Context as BroV1Context, broV1Schema as BroV1Schema, broV1VocabTurtle as BroV1VocabTurtle, type BroValidationError, type BroValidationResult, AGENT_TYPES as CREATOR_TYPES, type Creator, type CreatorAnonymous, type CreatorCorporation, type CreatorGovernment, type CreatorOrganization, type CreatorPerson, type CreatorRole, type CreatorRoot, type CreatorSoftware, type CreatorType, type CreatorUnknown, type ElementReference, type EntityIri, type ExternalReference, type IdentifierPropertyValue, type IdentifierSet, type IdentifierValue, type KomarcControlField, type KomarcDataField, type KomarcRecord, type KomarcSubfield, type LanguageTag, type ListElement, type ListEntityReference, type PropertyValue, REACTION_TYPES, type Reaction, type ReactionAbstract, type ReactionList, type ReactionType, type Rfc3339Date, type Rfc3339DateTime, type TargetReference, type TextFormat, type WebIri, type WorkIdentityReference, type WorkReference, type WorkType, assertBroSchema, broV1Schema, cloneAndNormalizePayload, convertBroToBibframe, convertBroToKomarc, isBroPayload, isReaction, isReactionAbstract, isReactionList, normalizePayload, normalizeUrnScheme, renderBroToMarkdown, validateBroSchema };
+export { AGENT_TYPES, type AdditionalPropertyArray, type Agent, type AgentCorporation, type AgentGovernment, type AgentInRole, type AgentIri, type AgentOrganization, type AgentPerson, type AgentRole, type AgentSoftware, type AgentType, type AgentUnknown, type BROGraph, BRO_CONTEXT_IRI, BRO_ENTITY_TYPES, BRO_SCHEMA_IRI, BRO_VOCAB_IRI, type BasedOnEntityReference, type BasedOnReference, type BibframeContribution, type BibframeIdentifier, type BibframeInstance, type BibframeNote, type BibframeWork, type BibliographicDate, type BibliographicLevel, type BibliographicReactionObjectBRO, type BibliographicReactionObjectBROV10, type BoundedJsonValue, type BroAbstract, type BroArticle, type BroBase, type BroContext, type BroDocument, type BroEntityReference, type BroEntityType, type BroItemList, type BroNode, type BroPayload, type BroReaction, type BroReactionAbstract, type BroReactionList, type BroReference, broV1Context as BroV1Context, broV1Schema as BroV1Schema, broV1VocabTurtle as BroV1VocabTurtle, type BroValidationError, type BroValidationResult, AGENT_TYPES as CREATOR_TYPES, type Creator, type CreatorAnonymous, type CreatorCorporation, type CreatorGovernment, type CreatorOrganization, type CreatorPerson, type CreatorRole, type CreatorRoot, type CreatorSoftware, type CreatorType, type CreatorUnknown, type ElementReference, type EntityIri, type ExternalReference, type HttpsIri, type IdentifierPropertyValue, type IdentifierSet, type IdentifierValue, type KomarcControlField, type KomarcDataField, type KomarcRecord, type KomarcSubfield, type LanguageTag, type ListElement, type ListEntityReference, type OrganizationType, type PropertyValue, REACTION_TYPES, type Reaction, type ReactionAbstract, type ReactionList, type ReactionListReference, type ReactionOrAbstractReference, type ReactionType, type Rfc3339Date, type Rfc3339DateTime, type TargetReference, type TextFormat, type WebIri, type WorkIdentityReference, type WorkReference, type WorkType, assertBroSchema, broV1Schema, cloneAndNormalizePayload, convertBroToBibframe, convertBroToKomarc, isBroGraph, isBroNode, isBroPayload, isReaction, isReactionAbstract, isReactionList, normalizePayload, normalizeUrnScheme, renderBroToMarkdown, validateBroSchema };

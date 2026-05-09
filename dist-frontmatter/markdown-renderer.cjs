@@ -1,16 +1,30 @@
-import type {
-  Agent,
-  BasedOnReference,
-  BibliographicReactionObjectBROV10,
-  IdentifierValue,
-  ListElement,
-  PropertyValue,
-  TargetReference,
-  WorkReference,
-} from "../validator/schema-types";
+"use strict";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-function yamlScalar(value: unknown): string {
-  if (value === null || value === undefined) return '""';
+// src/lib/markdown-renderer.ts
+var markdown_renderer_exports = {};
+__export(markdown_renderer_exports, {
+  renderBroToMarkdown: () => renderBroToMarkdown
+});
+module.exports = __toCommonJS(markdown_renderer_exports);
+function yamlScalar(value) {
+  if (value === null || value === void 0) return '""';
   if (typeof value === "number" || typeof value === "boolean") return String(value);
   const text = String(value);
   if (text === "" || text.trim() !== text || /[:#[\]{}&*!|>'"%@`,\n]/.test(text)) {
@@ -18,13 +32,11 @@ function yamlScalar(value: unknown): string {
   }
   return text;
 }
-
-function yamlStringArray(key: string, values: readonly string[] | undefined): string[] {
+function yamlStringArray(key, values) {
   if (!values || values.length === 0) return [];
   return [key, ...values.map((value) => `  - ${yamlScalar(value)}`)];
 }
-
-function renderIdentifierValue(identifier: IdentifierValue, indent: string): string[] {
+function renderIdentifierValue(identifier, indent) {
   if (typeof identifier === "string") return [`${indent}- ${yamlScalar(identifier)}`];
   const lines = [`${indent}- type: ${yamlScalar(identifier["@type"])}`];
   if (identifier.name) lines.push(`${indent}  name: ${yamlScalar(identifier.name)}`);
@@ -33,14 +45,12 @@ function renderIdentifierValue(identifier: IdentifierValue, indent: string): str
   if (identifier.valueReference) lines.push(`${indent}  valueReference: ${yamlScalar(identifier.valueReference)}`);
   return lines;
 }
-
-function renderIdentifierSet(reference: WorkReference, indent: string): string[] {
+function renderIdentifierSet(reference, indent) {
   if (!reference.identifier) return [];
   const identifiers = Array.isArray(reference.identifier) ? reference.identifier : [reference.identifier];
   return [`${indent}identifier:`, ...identifiers.flatMap((identifier) => renderIdentifierValue(identifier, `${indent}  `))];
 }
-
-function renderWorkReference(reference: WorkReference, indent: string): string[] {
+function renderWorkReference(reference, indent) {
   const lines = [`${indent}- type: ${yamlScalar(reference["@type"])}`];
   if (reference["@id"]) lines.push(`${indent}  id: ${yamlScalar(reference["@id"])}`);
   lines.push(...renderIdentifierSet(reference, `${indent}  `));
@@ -55,15 +65,10 @@ function renderWorkReference(reference: WorkReference, indent: string): string[]
   lines.push(...renderAdditionalProperty(reference.additionalProperty).map((line) => `${indent}  ${line}`));
   return lines;
 }
-
-function isBroEntityReference(reference: TargetReference | BasedOnReference): reference is Extract<BasedOnReference, { "@id": string }> {
-  return (
-    "@id" in reference &&
-    (reference["@type"] === "Reaction" || reference["@type"] === "ReactionAbstract" || reference["@type"] === "ReactionList")
-  );
+function isBroEntityReference(reference) {
+  return "@id" in reference && (reference["@type"] === "Reaction" || reference["@type"] === "ReactionAbstract" || reference["@type"] === "ReactionList");
 }
-
-function renderReferences(key: string, references: readonly (TargetReference | BasedOnReference)[] | undefined): string[] {
+function renderReferences(key, references) {
   if (!references || references.length === 0) return [];
   const lines = [`${key}:`];
   for (const reference of references) {
@@ -76,10 +81,8 @@ function renderReferences(key: string, references: readonly (TargetReference | B
   }
   return lines;
 }
-
-function renderAgent(agent: Agent, indent = "  "): string[] {
+function renderAgent(agent, indent = "  ") {
   const lines = [`${indent}- type: ${yamlScalar(agent["@type"])}`];
-
   if ("name" in agent && agent.name) lines.push(`${indent}  name: ${yamlScalar(agent.name)}`);
   if ("@id" in agent && agent["@id"]) lines.push(`${indent}  id: ${yamlScalar(agent["@id"])}`);
   if ("jobTitle" in agent && agent.jobTitle) lines.push(`${indent}  jobTitle: ${yamlScalar(agent.jobTitle)}`);
@@ -103,15 +106,12 @@ function renderAgent(agent: Agent, indent = "  "): string[] {
   if ("additionalProperty" in agent) {
     lines.push(...renderAdditionalProperty(agent.additionalProperty).map((line) => `${indent}  ${line}`));
   }
-
   return lines;
 }
-
-function renderCreators(creators: readonly Agent[]): string[] {
+function renderCreators(creators) {
   return ["creator:", ...creators.flatMap((creator) => renderAgent(creator))];
 }
-
-function renderAdditionalProperty(properties: readonly PropertyValue[] | undefined): string[] {
+function renderAdditionalProperty(properties) {
   if (!properties || properties.length === 0) return [];
   const lines = ["additionalProperty:"];
   for (const property of properties) {
@@ -124,14 +124,12 @@ function renderAdditionalProperty(properties: readonly PropertyValue[] | undefin
   }
   return lines;
 }
-
-function renderBroNodeToMarkdown(payload: Exclude<BibliographicReactionObjectBROV10, { "@graph": unknown }>): string {
-  const frontmatter: string[] = [
+function renderBroNodeToMarkdown(payload) {
+  const frontmatter = [
     `id: ${yamlScalar(payload["@id"])}`,
     `type: ${yamlScalar(payload["@type"])}`,
-    `dateCreated: ${yamlScalar(payload.dateCreated)}`,
+    `dateCreated: ${yamlScalar(payload.dateCreated)}`
   ];
-
   if (payload.name) frontmatter.push(`name: ${yamlScalar(payload.name)}`);
   if (payload.description) frontmatter.push(`description: ${yamlScalar(payload.description)}`);
   if (payload.byline) frontmatter.push(`byline: ${yamlScalar(payload.byline)}`);
@@ -143,20 +141,17 @@ function renderBroNodeToMarkdown(payload: Exclude<BibliographicReactionObjectBRO
     frontmatter.push("source:");
     for (const source of payload.source) frontmatter.push(...renderWorkReference(source, "  "));
   }
-
   if (payload["@type"] === "Reaction") {
     frontmatter.push(`reactionType: ${yamlScalar(payload.reactionType)}`);
     frontmatter.push(...renderReferences("about", payload.about));
     frontmatter.push(...renderReferences("isPartOf", payload.isPartOf));
   }
-
   if (payload["@type"] === "ReactionAbstract") {
     frontmatter.push(...renderReferences("isBasedOn", payload.isBasedOn));
   }
-
   if (payload["@type"] === "ReactionList") {
     frontmatter.push("itemListElement:");
-    for (const element of payload.itemListElement as readonly ListElement[]) {
+    for (const element of payload.itemListElement) {
       if ("@id" in element) {
         frontmatter.push(`  - id: ${yamlScalar(element["@id"])}`);
         if (element["@type"]) frontmatter.push(`    type: ${yamlScalar(element["@type"])}`);
@@ -164,7 +159,6 @@ function renderBroNodeToMarkdown(payload: Exclude<BibliographicReactionObjectBRO
     }
     frontmatter.push(...yamlStringArray("selectionCriteria:", payload.selectionCriteria));
   }
-
   frontmatter.push(...renderCreators(payload.creator));
   frontmatter.push(...yamlStringArray("inLanguage:", payload.inLanguage));
   frontmatter.push(...yamlStringArray("audience:", payload.audience));
@@ -173,16 +167,21 @@ function renderBroNodeToMarkdown(payload: Exclude<BibliographicReactionObjectBRO
   if ("image" in payload) frontmatter.push(...yamlStringArray("image:", payload.image));
   if ("citation" in payload) frontmatter.push(...yamlStringArray("citation:", payload.citation));
   frontmatter.push(...renderAdditionalProperty(payload.additionalProperty));
-
-  const metadata = `---\n${frontmatter.join("\n")}\n---`;
+  const metadata = `---
+${frontmatter.join("\n")}
+---`;
   const body = "text" in payload ? payload.text : "";
-  return body ? `${metadata}\n\n${body}` : metadata;
-}
+  return body ? `${metadata}
 
-export function renderBroToMarkdown(payload: BibliographicReactionObjectBROV10): string {
+${body}` : metadata;
+}
+function renderBroToMarkdown(payload) {
   if ("@graph" in payload) {
     return payload["@graph"].map(renderBroNodeToMarkdown).join("\n\n");
   }
-
   return renderBroNodeToMarkdown(payload);
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  renderBroToMarkdown
+});

@@ -2,9 +2,10 @@ import type {
   Agent,
   BasedOnReference,
   BibliographicReactionObjectBROV10,
-  EntityIri,
+  BroEntityReference,
   IdentifierValue,
   ListElement,
+  BroNode,
   TargetReference,
   WorkReference,
 } from "../validator/schema-types";
@@ -70,10 +71,16 @@ function agentType(agent: Agent): string {
   const concreteAgent = agent["@type"] === "Role" ? agent.agent : agent;
   switch (concreteAgent["@type"]) {
     case "Person":
-    case "UnknownAgent":
       return "bf:Person";
+    case "UnknownAgent":
+      return "bf:Agent";
     case "Organization":
+    case "Library":
+    case "GovernmentOrganization":
+    case "EducationalOrganization":
+    case "School":
       return "bf:Organization";
+    case "Corporation":
     case "SoftwareApplication":
       return "bf:Agent";
     default:
@@ -110,8 +117,11 @@ function contributionFromAgent(agent: Agent): BibframeContribution {
 
 function isEntityReference(
   reference: TargetReference | BasedOnReference | ListElement,
-): reference is { readonly "@id": EntityIri; readonly "@type"?: string } {
-  return "@id" in reference;
+): reference is BroEntityReference {
+  return (
+    "@id" in reference &&
+    (reference["@type"] === "Reaction" || reference["@type"] === "ReactionAbstract" || reference["@type"] === "ReactionList")
+  );
 }
 
 function identifierLabel(identifier: IdentifierValue): string {
@@ -167,20 +177,13 @@ function instanceFromReference(reference: TargetReference | BasedOnReference | L
 }
 
 function itemNodeFromReference(reference: ListElement) {
-  if (isEntityReference(reference)) {
-    return {
-      "@id": reference["@id"],
-      "@type": reference["@type"] ? `bro:${reference["@type"]}` : "bf:Work",
-    };
-  }
-
   return {
-    ...instanceFromWorkReference(reference),
-    "@type": "bf:Instance" as const,
+    "@id": reference["@id"],
+    "@type": `bro:${reference["@type"]}`,
   };
 }
 
-export function convertBroToBibframe(payload: BibliographicReactionObjectBROV10): BibframeWork {
+function convertBroNodeToBibframe(payload: BroNode): BibframeWork {
   const base: BibframeWork = {
     "@context": {
       bf: "http://id.loc.gov/ontologies/bibframe/",
@@ -234,4 +237,12 @@ export function convertBroToBibframe(payload: BibliographicReactionObjectBROV10)
     "@type": ["bf:Work", "bf:Collection", "bro:ReactionList"],
     "bf:hasItem": payload.itemListElement.map(itemNodeFromReference),
   };
+}
+
+export function convertBroToBibframe(payload: BibliographicReactionObjectBROV10): BibframeWork | BibframeWork[] {
+  if ("@graph" in payload) {
+    return payload["@graph"].map(convertBroNodeToBibframe);
+  }
+
+  return convertBroNodeToBibframe(payload);
 }

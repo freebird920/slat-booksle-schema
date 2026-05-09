@@ -55,6 +55,7 @@ async function buildNpmPackage() {
       main: "./npm-index.cjs",
       module: "./npm-index.js",
       types: "./npm-index.d.ts",
+      type: "module",
       exports: {
         ".": {
           types: "./npm-index.d.ts",

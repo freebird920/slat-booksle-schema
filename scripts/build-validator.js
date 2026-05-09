@@ -35,6 +35,7 @@ async function build() {
     main: "./index.cjs",
     module: "./index.js",
     types: "./index.d.ts",
+    type: "module",
     exports: {
       ".": {
         require: "./index.cjs",

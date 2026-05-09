@@ -1,25 +1,19 @@
-[
-  {
+{
+  "listingReaction_emptyText": {
     "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
-    "@type": "ReactionList",
-    "@id": "https://library.example.kr/lists/2026-05-recommended",
-    "name": "2026년 5월 사서 추천 자료",
-    "creator": [
-      {
-        "@type": "Organization",
-        "name": "예시도서관",
-        "@id": "https://library.example.kr/"
-      }
-    ],
-    "itemListElement": [
+    "@type": "Reaction",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000101",
+    "reactionType": "Listing",
+    "name": "2026년 5월 사서 추천 자료 등재: 1984",
+    "about": [
       {
         "@type": "Book",
-        "bibliographicLevel": "Edition",
         "identifier": [
           "urn:isbn:9788937462788",
           "http://lod.nl.go.kr/resource/KMO199000001",
           {
             "@type": "PropertyValue",
+            "name": "aladin:itemId",
             "propertyID": "aladin:itemId",
             "value": 123456
           }
@@ -28,129 +22,460 @@
         "creatorName": "George Orwell",
         "publisherName": "민음사",
         "datePublished": "2003"
-      },
-      {
-        "@type": "ScholarlyArticle",
-        "identifier": "https://doi.org/10.1038/s41586-021-03819-2",
-        "name": "예시 논문"
-      },
-      {
-        "@type": "WebPage",
-        "name": "식별자를 아직 모르는 추천 웹문서",
-        "url": "https://example.org/recommended/webpage"
       }
     ],
-    "dateCreated": "2026-05-09T00:00:00+09:00",
-    "inLanguage": [
-      "ko"
-    ],
-    "citation": [
-      "https://library.example.kr/recommendations/2026-05"
-    ]
-  },
-  {
-    "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
-    "@type": "ReactionList",
-    "@id": "https://library.example.kr/lists/almond-editions",
-    "name": "아몬드 판본 구분 예시",
+    "text": "",
     "creator": [
       {
-        "@type": "Organization",
-        "name": "예시도서관"
+        "@type": "Library",
+        "name": "예시공공도서관",
+        "@id": "https://library.example.kr/",
+        "knowsAbout": [
+          "청소년 독서교육",
+          "공공도서관 장서개발"
+        ]
       }
     ],
-    "itemListElement": [
+    "source": [
       {
-        "@type": "Book",
-        "bibliographicLevel": "Edition",
-        "identifier": "urn:example:book:almond-youth-edition",
-        "name": "아몬드",
-        "creatorName": "손원평",
-        "bookEdition": "청소년판"
-      },
-      {
-        "@type": "Book",
-        "bibliographicLevel": "Edition",
-        "identifier": "urn:example:book:almond-special-edition",
-        "name": "아몬드",
-        "creatorName": "손원평",
-        "bookEdition": "특별판"
+        "@type": "WebPage",
+        "identifier": "https://library.example.kr/recommend/2026-05",
+        "name": "예시공공도서관 2026년 5월 사서 추천 자료"
       }
     ],
+    "sourceKey": "example-library:recommend:2026-05#item-001",
     "dateCreated": "2026-05-09T00:00:00+09:00",
     "inLanguage": [
       "ko"
+    ],
+    "keywords": [
+      "추천도서",
+      "청소년"
     ]
   },
-  {
+  "listingReaction_withRationale": {
     "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
     "@type": "Reaction",
-    "@id": "urn:uuid:7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000102",
     "reactionType": "Listing",
-    "name": "청소년 토론 추천 사유",
+    "name": "2026년 5월 사서 추천 자료 등재: 아몬드",
     "about": [
       {
         "@type": "Book",
-        "bibliographicLevel": "Edition",
-        "identifier": "urn:isbn:9788937462788",
-        "name": "1984",
-        "creatorName": "George Orwell"
+        "name": "아몬드",
+        "creatorName": "손원평"
       }
     ],
-    "text": "권력과 언어를 함께 토론하기 좋은 책이라 목록에 포함함.",
+    "text": "청소년 독자가 타인의 감정을 이해하고 관계를 성찰하기에 적합한 작품으로 선정함.",
+    "textFormat": "text/plain",
     "creator": [
       {
-        "@type": "Organization",
-        "name": "예시도서관"
+        "@type": "Library",
+        "name": "예시공공도서관",
+        "@id": "https://library.example.kr/",
+        "knowsAbout": [
+          "청소년 독서교육",
+          "공공도서관 장서개발"
+        ]
       }
+    ],
+    "source": [
+      {
+        "@type": "WebPage",
+        "identifier": "https://library.example.kr/recommend/2026-05",
+        "name": "예시공공도서관 2026년 5월 사서 추천 자료"
+      }
+    ],
+    "sourceKey": "example-library:recommend:2026-05#item-002",
+    "dateCreated": "2026-05-09T00:00:00+09:00",
+    "inLanguage": [
+      "ko"
+    ],
+    "keywords": [
+      "추천도서",
+      "청소년",
+      "공감"
+    ]
+  },
+  "teacherResponseReaction": {
+    "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
+    "@type": "Reaction",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000103",
+    "reactionType": "Response",
+    "name": "수업 토론용 1984 서평",
+    "about": [
+      {
+        "@type": "Book",
+        "identifier": [
+          "urn:isbn:9788937462788",
+          "http://lod.nl.go.kr/resource/KMO199000001",
+          {
+            "@type": "PropertyValue",
+            "name": "aladin:itemId",
+            "propertyID": "aladin:itemId",
+            "value": 123456
+          }
+        ],
+        "name": "1984",
+        "creatorName": "George Orwell",
+        "publisherName": "민음사",
+        "datePublished": "2003"
+      }
+    ],
+    "isPartOf": [
+      {
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000100",
+        "@type": "ReactionList"
+      }
+    ],
+    "text": "언어와 권력의 관계를 토론하기에 적합하다. 단순한 줄거리 이해를 넘어 정보 통제와 시민성의 문제를 연결할 수 있다.",
+    "textFormat": "text/plain",
+    "creator": [
+      {
+        "@type": "Role",
+        "roleName": "중학교 국어 교사",
+        "agent": {
+          "@type": "Person",
+          "name": "김교사"
+        },
+        "affiliation": [
+          {
+            "@type": "School",
+            "name": "예시중학교"
+          }
+        ],
+        "knowsAbout": [
+          "국어교육",
+          "청소년문학",
+          "독서토론"
+        ],
+        "credential": [
+          "중등 국어교사 자격"
+        ]
+      }
+    ],
+    "byline": "김교사, 예시중학교 국어과",
+    "source": [
+      {
+        "@type": "WebPage",
+        "identifier": "https://school.example.kr/reading/1984-review",
+        "name": "예시중학교 독서교육 자료"
+      }
+    ],
+    "sourceKey": "school.example.kr:reading:1984-review",
+    "dateCreated": "2026-05-09T09:00:00+09:00",
+    "audience": [
+      "중학교 2학년",
+      "국어 수행평가"
+    ],
+    "keywords": [
+      "토론",
+      "전체주의",
+      "언어"
+    ]
+  },
+  "reactionList_referencesOnly": {
+    "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
+    "@type": "ReactionList",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000100",
+    "name": "2026년 5월 사서 추천 자료",
+    "description": "이 목록은 자료 자체가 아니라 자료 등재 행위인 Listing Reaction을 항목으로 삼는다.",
+    "creator": [
+      {
+        "@type": "Library",
+        "name": "예시공공도서관",
+        "@id": "https://library.example.kr/",
+        "knowsAbout": [
+          "청소년 독서교육",
+          "공공도서관 장서개발"
+        ]
+      }
+    ],
+    "source": [
+      {
+        "@type": "WebPage",
+        "identifier": "https://library.example.kr/recommend/2026-05",
+        "name": "예시공공도서관 2026년 5월 사서 추천 자료"
+      }
+    ],
+    "sourceKey": "example-library:recommend:2026-05",
+    "itemListElement": [
+      {
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000101",
+        "@type": "Reaction"
+      },
+      {
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000102",
+        "@type": "Reaction"
+      },
+      {
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000103",
+        "@type": "Reaction"
+      }
+    ],
+    "selectionCriteria": [
+      "청소년 독자의 토론 가능성",
+      "도서관 소장 및 접근 가능성"
     ],
     "dateCreated": "2026-05-09T00:00:00+09:00",
     "inLanguage": [
       "ko"
+    ],
+    "keywords": [
+      "추천도서",
+      "청소년",
+      "공공도서관"
     ]
   },
-  {
+  "graph_recommendationListExchange": {
     "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
-    "@type": "ReactionList",
-    "@id": "https://library.example.kr/lists/2026-05-with-notes",
-    "name": "추천 사유가 포함된 목록",
+    "@graph": [
+      {
+        "@type": "ReactionList",
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000100",
+        "name": "2026년 5월 사서 추천 자료",
+        "creator": [
+          {
+            "@type": "Library",
+            "name": "예시공공도서관",
+            "@id": "https://library.example.kr/",
+            "knowsAbout": [
+              "청소년 독서교육",
+              "공공도서관 장서개발"
+            ]
+          }
+        ],
+        "source": [
+          {
+            "@type": "WebPage",
+            "identifier": "https://library.example.kr/recommend/2026-05",
+            "name": "예시공공도서관 2026년 5월 사서 추천 자료"
+          }
+        ],
+        "sourceKey": "example-library:recommend:2026-05",
+        "itemListElement": [
+          {
+            "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000101",
+            "@type": "Reaction"
+          },
+          {
+            "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000102",
+            "@type": "Reaction"
+          }
+        ],
+        "selectionCriteria": [
+          "청소년 독자의 토론 가능성",
+          "도서관 소장 및 접근 가능성"
+        ],
+        "dateCreated": "2026-05-09T00:00:00+09:00",
+        "inLanguage": [
+          "ko"
+        ]
+      },
+      {
+        "@type": "Reaction",
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000101",
+        "reactionType": "Listing",
+        "name": "등재: 1984",
+        "about": [
+          {
+            "@type": "Book",
+            "identifier": [
+              "urn:isbn:9788937462788",
+              "http://lod.nl.go.kr/resource/KMO199000001",
+              {
+                "@type": "PropertyValue",
+                "name": "aladin:itemId",
+                "propertyID": "aladin:itemId",
+                "value": 123456
+              }
+            ],
+            "name": "1984",
+            "creatorName": "George Orwell",
+            "publisherName": "민음사",
+            "datePublished": "2003"
+          }
+        ],
+        "isPartOf": [
+          {
+            "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000100",
+            "@type": "ReactionList"
+          }
+        ],
+        "text": "",
+        "creator": [
+          {
+            "@type": "Library",
+            "name": "예시공공도서관",
+            "@id": "https://library.example.kr/",
+            "knowsAbout": [
+              "청소년 독서교육",
+              "공공도서관 장서개발"
+            ]
+          }
+        ],
+        "source": [
+          {
+            "@type": "WebPage",
+            "identifier": "https://library.example.kr/recommend/2026-05",
+            "name": "예시공공도서관 2026년 5월 사서 추천 자료"
+          }
+        ],
+        "sourceKey": "example-library:recommend:2026-05#item-001",
+        "dateCreated": "2026-05-09T00:00:00+09:00",
+        "inLanguage": [
+          "ko"
+        ]
+      },
+      {
+        "@type": "Reaction",
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000102",
+        "reactionType": "Listing",
+        "name": "등재: 아몬드",
+        "about": [
+          {
+            "@type": "Book",
+            "name": "아몬드",
+            "creatorName": "손원평"
+          }
+        ],
+        "isPartOf": [
+          {
+            "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000100",
+            "@type": "ReactionList"
+          }
+        ],
+        "text": "청소년 독자가 타인의 감정을 이해하고 관계를 성찰하기에 적합한 작품으로 선정함.",
+        "creator": [
+          {
+            "@type": "Library",
+            "name": "예시공공도서관",
+            "@id": "https://library.example.kr/",
+            "knowsAbout": [
+              "청소년 독서교육",
+              "공공도서관 장서개발"
+            ]
+          }
+        ],
+        "source": [
+          {
+            "@type": "WebPage",
+            "identifier": "https://library.example.kr/recommend/2026-05",
+            "name": "예시공공도서관 2026년 5월 사서 추천 자료"
+          }
+        ],
+        "sourceKey": "example-library:recommend:2026-05#item-002",
+        "dateCreated": "2026-05-09T00:00:00+09:00",
+        "inLanguage": [
+          "ko"
+        ]
+      }
+    ]
+  },
+  "awardListingReaction": {
+    "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
+    "@type": "Reaction",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000201",
+    "reactionType": "Listing",
+    "name": "2026 예시문학상 수상작 등재",
+    "about": [
+      {
+        "@type": "Book",
+        "identifier": "urn:isbn:9791190000001",
+        "name": "수상작 예시",
+        "creatorName": "홍길동",
+        "publisherName": "예시출판사",
+        "bookEdition": "2026년판"
+      }
+    ],
+    "text": "",
     "creator": [
       {
         "@type": "Organization",
-        "name": "예시도서관"
+        "name": "예시문학상 운영위원회",
+        "credential": [
+          "예시문학상 공식 운영 주체"
+        ]
       }
     ],
-    "itemListElement": [
+    "isPartOf": [
       {
-        "@id": "urn:uuid:7c9e6679-7425-40de-944b-e07fc1f90ae7",
-        "@type": "Reaction"
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000200",
+        "@type": "ReactionList"
       }
     ],
-    "dateCreated": "2026-05-09T00:00:00+09:00"
+    "source": [
+      {
+        "@type": "WebPage",
+        "identifier": "https://award.example.org/2026/winners",
+        "name": "2026 예시문학상 수상작 발표"
+      }
+    ],
+    "sourceKey": "award.example.org:2026#winner-001",
+    "dateCreated": "2026-05-09T00:00:00+09:00",
+    "additionalProperty": [
+      {
+        "@type": "PropertyValue",
+        "name": "award:name",
+        "value": "예시문학상"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "award:year",
+        "value": 2026
+      }
+    ]
   },
-  {
+  "abstractOfReaction": {
     "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
     "@type": "ReactionAbstract",
-    "@id": "urn:uuid:f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "name": "서평 요약",
-    "text": "이 요약은 1984의 신어를 언어 통제를 통한 사고 통제 장치로 해석한 서평을 압축한다.",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000104",
+    "name": "1984 교사 서평 요약",
+    "text": "이 서평은 『1984』를 언어와 권력의 관계를 토론하기에 적합한 작품으로 평가한다.",
+    "textFormat": "text/plain",
     "creator": [
       {
         "@type": "SoftwareApplication",
         "@id": "https://schema.slat.or.kr/agents/bro-summarizer",
         "name": "BRO Summarizer",
-        "softwareVersion": "1.2.0"
+        "softwareVersion": "1.0.0"
       }
     ],
-    "dateCreated": "2026-05-09T21:05:00+09:00",
     "isBasedOn": [
       {
-        "@id": "urn:uuid:7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000103",
         "@type": "Reaction"
       }
     ],
+    "sourceKey": "summary:school.example.kr:reading:1984-review",
+    "dateCreated": "2026-05-09T10:00:00+09:00",
+    "inLanguage": [
+      "ko"
+    ]
+  },
+  "anonymousPersonalResponse": {
+    "@context": "https://schema.slat.or.kr/bro/v1.0/context.jsonld",
+    "@type": "Reaction",
+    "@id": "urn:uuid:018f1b2c-0000-7000-8000-000000000300",
+    "reactionType": "Unspecified",
+    "about": [
+      {
+        "@type": "Book",
+        "name": "데미안",
+        "creatorName": "헤르만 헤세"
+      }
+    ],
+    "text": "성장과 자기 발견을 다룬 작품이라는 짧은 메모가 원천에 남아 있음.",
+    "creator": [
+      {
+        "@type": "UnknownAgent",
+        "name": "원천 작성자 미상"
+      }
+    ],
+    "byline": "익명",
+    "dateCreated": "2026-05-09T00:00:00+09:00",
     "inLanguage": [
       "ko"
     ]
   }
-]
+}

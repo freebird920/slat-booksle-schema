@@ -1,14 +1,14 @@
 {
-  "name": "@slat.or.kr/bro-frontmatter",
-  "version": "1.0.1",
-  "main": "./frontmatter.cjs",
-  "module": "./frontmatter.js",
-  "types": "./frontmatter.d.ts",
+  "name": "@slat.or.kr/bro-markdown-renderer",
+  "version": "1.0.3",
+  "main": "./markdown-renderer.cjs",
+  "module": "./markdown-renderer.js",
+  "types": "./markdown-renderer.d.ts",
   "exports": {
     ".": {
-      "require": "./frontmatter.cjs",
-      "import": "./frontmatter.js",
-      "types": "./frontmatter.d.ts"
+      "require": "./markdown-renderer.cjs",
+      "import": "./markdown-renderer.js",
+      "types": "./markdown-renderer.d.ts"
     }
   }
 }

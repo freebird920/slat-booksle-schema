@@ -28,18 +28,25 @@ function hasForbiddenFrontMatter(text: string): boolean {
 
 function collectApplicationErrors(payload: unknown): BroValidationError[] {
   const errors: BroValidationError[] = [];
-  const text = getTextPayload(payload);
 
-  if (text !== null && hasForbiddenFrontMatter(text)) {
-    errors.push({
-      location: "/text",
-      instanceLocation: "/text",
-      keyword: "bro-no-frontmatter",
-      message: "BRO text MUST NOT begin with a YAML/TOML front-matter block.",
-      error: "BRO text MUST NOT begin with a YAML/TOML front-matter block.",
-    });
+  function visit(value: unknown, path: string) {
+    const text = getTextPayload(value);
+    if (text !== null && hasForbiddenFrontMatter(text)) {
+      errors.push({
+        location: `${path}/text`,
+        instanceLocation: `${path}/text`,
+        keyword: "bro-no-frontmatter",
+        message: "BRO text MUST NOT begin with a YAML/TOML front-matter block.",
+        error: "BRO text MUST NOT begin with a YAML/TOML front-matter block.",
+      });
+    }
+
+    if (value && typeof value === "object" && Array.isArray((value as Record<string, unknown>)["@graph"])) {
+      (value as { "@graph": unknown[] })["@graph"].forEach((node, index) => visit(node, `${path}/@graph/${index}`));
+    }
   }
 
+  visit(payload, "");
   return errors;
 }
 
